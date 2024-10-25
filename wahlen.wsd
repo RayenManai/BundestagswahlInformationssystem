@@ -1,0 +1,75 @@
+@startuml
+
+class Ergebnisse {
+  + ParteiId: int
+  + Jahr: int
+  + AnzahlSitze: int
+  + DirektMandate: int
+  + UberhangMandate: int
+  + AusgleichsMandate: int
+}
+
+class ErststimmeErgebnis {
+   + KandidatId : int
+   + Jahr : int
+   + AnzahlStimmen: int
+}
+
+class ZweitstimmeErgebnis {
+   + ParteiId : int
+   + WahlkreisId: int
+   + Jahr: int
+   + AnzahlStimmen: int
+}
+
+class Erststimme {
+   + StimmzettelId : int
+   + KandidatId : int
+   + Jahr: int
+}
+
+class Zweitstimme {
+   + StimmzettelId : int
+   + ParteiId : int
+   + WahlkreisId: int
+   + Jahr: int
+}
+
+class Wahlkreis {
+  + Name: String
+  + WKId: int
+  + Bundesland: String
+  + Anzahlwahlberechtigte: int
+}
+
+class DirektKandidat {
+  + Id: int
+  + Name: String
+  + ParteiId: int
+  + WahlkreisId: int
+}
+
+class Partei {
+  + ParteiId: int
+  + Name: String
+  + Kurzbezeichnung: String
+}
+
+DirektKandidat " *  " --> " 0..1 " Partei
+
+DirektKandidat " * " --> " 1 " Wahlkreis
+
+Zweitstimme "  * " --> " 1 " Partei
+
+Zweitstimme " * " --> " 1 " Wahlkreis
+
+Erststimme " * " --> " 1 " DirektKandidat
+
+Ergebnisse  " * "  --> " * "  Partei
+
+ZweitstimmeErgebnis " 1  " --> " * "  Zweitstimme
+
+ErststimmeErgebnis " 1  " --> " * "  Erststimme
+
+
+@enduml
