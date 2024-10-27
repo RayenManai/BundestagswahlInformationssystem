@@ -38,6 +38,9 @@ Das System soll eine hohe Verfügbarkeit bieten und mindestens 99,9 % der Zeit z
 - **Benutzerfreundlichkeit:**
 Die Benutzeroberfläche soll einfach und intuitiv zu bedienen sein.
 
+- **Konsistenz bei gleichzeitigen Zugriffen:**
+Das Datenbanksystem muss sicherstellen, dass alle gleichzeitigen Zugriffe auf Wahldaten konsistent mit isolierten Transaktionen verarbeitet werden.
+
 #### Erweiterte Anforderungen (Nice-to-Have-Features)
 - **Echtzeit-Analyse und Prognose:**
 Das System könnte mit einer Funktion erweitert werden, die es ermöglicht, in Echtzeit Prognosen und Trends während der Stimmabgabe darzustellen. Diese Funktion bietet tiefere Einblicke in mögliche Endergebnisse basierend auf bereits abgegebenen Stimmen.
