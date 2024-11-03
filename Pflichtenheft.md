@@ -61,7 +61,7 @@ Das Datenmodell besteht aus den folgenden Entitäten und Relationen:
 
 
 #### Benutzer-Oberfläche 
-Ein Überblick ist auf [Figma](https://www.figma.com/proto/gGm4p1eNUpWRlI9xZu1wLC/votealyze?node-id=6-3776&node-type=canvas&t=tFTFJENVSNoyepIA-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1) verfügbar.
+Ein Überblick ist auf [Figma](https://www.figma.com/proto/gGm4p1eNUpWRlI9xZu1wLC/votealyze?node-id=6-3776&node-type=canvas&t=SuFTL7pMOP9HHw80-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1) verfügbar.
 Die Oberfläche besteht aus zwei Schnittstellen:
 - **Eine Ergebnis- und Vergleichsanalyse-Schnittstelle** mit den folgenden Komponenten:
   - Einem Filter, das die Auswahl der Wahlergebnisse nach Jahr, Bundesland und Wahlkreis und im Vergleich mit anderen Jahren und/oder Wahlkreisen ermöglicht.
