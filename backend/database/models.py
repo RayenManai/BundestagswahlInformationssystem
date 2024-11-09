@@ -1,25 +1,25 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, CheckConstraint
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
 class Partei(Base):
     __tablename__ = 'Partei'
     parteiId = Column(Integer, primary_key=True)
-    parteiName = Column(String(50), nullable=False, unique=True)
+    parteiName = Column(String(100), nullable=False, unique=True)
     kurzbezeichnung = Column(String(10), nullable=False, unique=True)
 
 class Wahlkreis(Base):
     __tablename__ = 'Wahlkreis'
     wahlkreisId = Column(Integer, primary_key=True)
-    wahlkreisName = Column(String(50), nullable=False, unique=True)
+    wahlkreisName = Column(String(100), nullable=False, unique=True)
     bundesland = Column(String(2), CheckConstraint("bundesland in ('BW', 'BY', 'BE', 'BB', 'HB', 'HH', 'HE', 'MV', 'NI', 'NW', 'RP', 'SL', 'SN', 'ST', 'SH', 'TH')"))
     anzahlwahlberechtigte = Column(Integer)
 
 class DirektKandidat(Base):
     __tablename__ = 'DirektKandidat'
     DKId = Column(Integer, primary_key=True)
-    DKName = Column(String(50), nullable=False)
+    DKName = Column(String(100), nullable=False)
     parteiId = Column(Integer, ForeignKey('Partei.parteiId'))
     wahlkreisId = Column(Integer, ForeignKey('Wahlkreis.wahlkreisId'))
 
