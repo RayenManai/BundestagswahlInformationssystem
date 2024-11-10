@@ -92,10 +92,11 @@ CSV_MAPPER = {
         }
 }
 
-engine = create_engine(DATABASE_URL, echo=True)
-Base.metadata.create_all(engine)
-new_session = sessionmaker(bind=engine)
-with new_session() as session:
-    for party in PARTY_MAPPER:
-        session.add(Partei(parteiId=party[0], parteiName=party[2], kurzbezeichnung=party[1]))
-    session.commit()
+if __name__ == '__main__':
+    engine = create_engine(DATABASE_URL, echo=True)
+    Base.metadata.create_all(engine)
+    new_session = sessionmaker(bind=engine)
+    with new_session() as session:
+        for party in PARTY_MAPPER:
+            session.add(Partei(parteiId=party[0], parteiName=party[2], kurzbezeichnung=party[1]))
+        session.commit()
