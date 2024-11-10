@@ -10,6 +10,9 @@ venv/
 # VS Code settings
 .vscode/
 
+# pycharm
+.idea
+
 
 # Alembic migrations cache
 alembic/versions/*.pyc
