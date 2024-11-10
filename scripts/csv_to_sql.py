@@ -40,6 +40,11 @@ def csv_wahlberechtigte():
     return list(map(lambda entry: {'wahlkreisId': int(entry['Nr']),
                                    'wahlberechtigte': int(entry['Wahlberechtigte; Erststimmen; Endgültig'])},
                 filter(lambda entry: len(entry['Nr']) == 3, dictionary_list)))
+def csv_wahlende():
+    dictionary_list = csv_to_dict('../csv_data/kerg.csv', delimiter=';', ignore_rows=[0, 1], header_rows=3)
+    return list(map(lambda entry: {'wahlkreisId': int(entry['Nr']),
+                                   'Wählende': int(entry['Wählende; Erststimmen; Endgültig'])},
+                filter(lambda entry: len(entry['Nr']) == 3, dictionary_list)))
 
 
 if __name__ == '__main__':
@@ -48,9 +53,9 @@ if __name__ == '__main__':
     #mapping = CSV_MAPPER['btw21_wahlkreisnamen_utf8.csv']['mapping']
     #print(mapping)
     #dict_to_sql(results, mapping)
-    #results = csv_to_dict(**CSV_MAPPER['btwkr21_umrechnung_btw17.csv']['format'])
-    #mapping = CSV_MAPPER['btwkr21_umrechnung_btw17.csv']['mapping']
-    #dict_to_sql(results, mapping)
+    results = csv_to_dict(**CSV_MAPPER['btwkr21_umrechnung_btw17.csv']['format'])
+    mapping = CSV_MAPPER['btwkr21_umrechnung_btw17.csv']['mapping']
+    dict_to_sql(results, mapping)
     results = csv_to_dict(**CSV_MAPPER['kerg.csv']['format'])
     #print(results)
     mapping = CSV_MAPPER['kerg.csv']['mapping']

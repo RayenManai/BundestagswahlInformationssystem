@@ -1,6 +1,12 @@
 from typing import Dict, List
 import xml.etree.ElementTree as ET
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from backend.database.config import DATABASE_URL
+from backend.database.models import DirektKandidat, Partei, Wahlkreis, ErststimmeErgebnisse
+from scripts.csv_to_sql import csv_wahlende
 
 
 def quick_check():
@@ -92,15 +98,65 @@ fields = [
     {'key': 'ProzentStimmen', 'path': 'Wahldaten', 'attribute': 'Prozent'}
 ]
 
-parsed_data = xml_parser(
-    xml_file='../xml_data/gewaehlte_01.xml',
-    main_element='Kandidat',
-    fields=fields,
-    filter_element_path='Wahldaten',
-    filter_attribute='Kennzeichen',
-    filter_value='ERSTSTIMMENBEWERBER',
-)
+def store_direktkandidaten(parsed_data, session):
+    # Load mappings
+    partei_mapping = {partei.parteiName: partei.parteiId for partei in session.query(Partei).all()}
+    wahlkreis_mapping = {wahlkreis.wahlkreisName: wahlkreis.wahlkreisId for wahlkreis in session.query(Wahlkreis).all()}
+    for data in parsed_data:
+        partei_id = partei_mapping.get(data['Partei'])
+        wahlkreis_id = wahlkreis_mapping.get(data['Wahlkreis'])
 
-for data in parsed_data:
-    print(data)
+        if partei_id and wahlkreis_id:
+            kandidat = DirektKandidat(
+                DKName=data['DKName'],
+                parteiId=partei_id,
+                wahlkreisId=wahlkreis_id
+            )
+            session.add(kandidat)
+        else:
+            print(f"Warning: Missing mapping for Partei '{data['Partei']}' or Wahlkreis '{data['Wahlkreis']}'.")
 
+    session.commit()
+
+def store_erststimme_ergebnisse2021(parsed_data, session):
+    kandidat_mapping = {dk.DKName: dk.DKId for dk in session.query(DirektKandidat).all()}
+    wahlkreis_mapping = {wahlkreis.wahlkreisName: wahlkreis.wahlkreisId for wahlkreis in session.query(Wahlkreis).all()}
+    wahlende_dictionary = csv_wahlende()
+
+    for data in parsed_data:
+        wahlkreis_id = wahlkreis_mapping.get(data['Wahlkreis'])
+        wahlende_in_current_wk = {item['wahlkreisId']: item['Wählende'] for item in wahlende_dictionary}.get(wahlkreis_id)
+        kandidat_id = kandidat_mapping[data['DKName']]
+        if wahlkreis_id and kandidat_id:
+            Ergebniss = ErststimmeErgebnisse(
+                kandidatId=kandidat_id,
+                jahr=2021,
+                anzahlstimmen=int((float(data['ProzentStimmen']) * float(wahlende_in_current_wk))/100)
+            )
+            session.add(Ergebniss)
+        else:
+            print(f"Warning: Missing mapping for Kandidat '{data['DKName']}' or Wahlkreis '{data['Wahlkreis']}'.")
+
+    session.commit()
+
+if __name__ == "__main__":
+    # Setup database connection
+    engine = create_engine(DATABASE_URL)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    # Load parsed XML data
+    parsed_data = xml_parser(
+        xml_file='../xml_data/gewaehlte_01.xml',
+        main_element='Kandidat',
+        fields=fields,
+        filter_element_path='Wahldaten',
+        filter_attribute='Kennzeichen',
+        filter_value='ERSTSTIMMENBEWERBER',
+    )
+
+    store_direktkandidaten(parsed_data, session)
+
+    store_erststimme_ergebnisse2021(parsed_data,session)
+
+    session.close()
