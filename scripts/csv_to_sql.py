@@ -30,7 +30,7 @@ def dict_to_sql(dict_list: list[dict], table_key_map: dict[declarative_base, lis
         for entry in dict_list:
             for table, columns_to_key in table_key_map.items():
                 for column_to_key in columns_to_key:
-                    column_to_value = {column.key: entry[key.value] if isinstance(key, CSVKey) else key.value for column, key in column_to_key.items()}
+                    column_to_value = {column.key: key.as_type(entry[key.value]) if isinstance(key, CSVKey) else key.value for column, key in column_to_key.items()}
                     session.add(table(**column_to_value))
         session.commit()
 
@@ -41,13 +41,17 @@ def csv_wahlberechtigte():
                                    'wahlberechtigte': int(entry['Wahlberechtigte; Erststimmen; Endgültig'])},
                 filter(lambda entry: len(entry['Nr']) == 3, dictionary_list)))
 
+
 if __name__ == '__main__':
-    # results = csv_to_dict('../csv_data/btw21_wahlkreisnamen_utf8.csv', delimiter=';', ignore_rows=[0,1,2,3,4,5,6], header_rows=1)
-    # mapping = CSV_MAPPER['btw21_wahlkreisnamen_utf8.csv']
-    # dict_to_sql(results, mapping)
-    #results = csv_to_dict('../csv_data/btwkr21_umrechnung_btw17.csv', delimiter=';', ignore_rows=[0, 1, 2, 3, 17, 31, 62, 65, 164, 204, 229, 315, 276, 320, 99, 76, 24, 181, 86, 213, 321, 322],
-    #                      header_rows=2)
+    #results = csv_to_dict(**CSV_MAPPER['btw21_wahlkreisnamen_utf8.csv']['format'])
     #print(results)
-    #mapping = CSV_MAPPER['btwkr21_umrechnung_btw17.csv']
+    #mapping = CSV_MAPPER['btw21_wahlkreisnamen_utf8.csv']['mapping']
+    #print(mapping)
     #dict_to_sql(results, mapping)
-    print(csv_wahlberechtigte())
+    #results = csv_to_dict(**CSV_MAPPER['btwkr21_umrechnung_btw17.csv']['format'])
+    #mapping = CSV_MAPPER['btwkr21_umrechnung_btw17.csv']['mapping']
+    #dict_to_sql(results, mapping)
+    results = csv_to_dict(**CSV_MAPPER['kerg.csv']['format'])
+    #print(results)
+    mapping = CSV_MAPPER['kerg.csv']['mapping']
+    dict_to_sql(results, mapping)
