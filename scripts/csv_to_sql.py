@@ -1,10 +1,5 @@
 import csv
 from itertools import zip_longest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-from backend.database.models import *
-from backend.database.config import DATABASE_URL
 
 from scripts.csv_to_sql_maps import *
 
@@ -40,12 +35,19 @@ def dict_to_sql(dict_list: list[dict], table_key_map: dict[declarative_base, lis
         session.commit()
 
 
+def csv_wahlberechtigte():
+    dictionary_list = csv_to_dict('../csv_data/kerg.csv', delimiter=';', ignore_rows=[0, 1], header_rows=3)
+    return list(map(lambda entry: {'wahlkreisId': int(entry['Nr']),
+                                   'wahlberechtigte': int(entry['Wahlberechtigte; Erststimmen; Endgültig'])},
+                filter(lambda entry: len(entry['Nr']) == 3, dictionary_list)))
+
 if __name__ == '__main__':
-    results = csv_to_dict('../csv_data/btw21_wahlkreisnamen_utf8.csv', delimiter=';', ignore_rows=[0,1,2,3,4,5,6], header_rows=1)
-    mapping = CSV_MAPPER['btw21_wahlkreisnamen_utf8.csv']
-    dict_to_sql(results, mapping)
-    # results = csv_to_dict('../csv_data/btwkr21_umrechnung_btw17.csv', delimiter=';', ignore_rows=[0, 1, 2, 3, 322],
-    #                      header_rows=2)
-    # print(results)
-    # mapping = CSV_MAPPER['btwkr21_umrechnung_btw17.csv']
+    # results = csv_to_dict('../csv_data/btw21_wahlkreisnamen_utf8.csv', delimiter=';', ignore_rows=[0,1,2,3,4,5,6], header_rows=1)
+    # mapping = CSV_MAPPER['btw21_wahlkreisnamen_utf8.csv']
     # dict_to_sql(results, mapping)
+    #results = csv_to_dict('../csv_data/btwkr21_umrechnung_btw17.csv', delimiter=';', ignore_rows=[0, 1, 2, 3, 17, 31, 62, 65, 164, 204, 229, 315, 276, 320, 99, 76, 24, 181, 86, 213, 321, 322],
+    #                      header_rows=2)
+    #print(results)
+    #mapping = CSV_MAPPER['btwkr21_umrechnung_btw17.csv']
+    #dict_to_sql(results, mapping)
+    print(csv_wahlberechtigte())

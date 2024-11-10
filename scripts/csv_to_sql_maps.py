@@ -3,6 +3,7 @@ from backend.database.models import *
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+
 class CSVKey:
     value: str
 
@@ -87,7 +88,7 @@ CSV_MAPPER = {
                  ZweitstimmeErgebnisse.jahr: DirectValue[int](2017),
                  ZweitstimmeErgebnisse.wahlkreisId: CSVKey('Wkr-Nr.'),
                  ZweitstimmeErgebnisse.anzahlstimmen: CSVKey(f'{abbreviation}; Zweitstimmen')
-                 } for (party_id, abbreviation, _) in PARTY_MAPPER
+                 } for (party_id, abbreviation, _) in PARTY_MAPPER if party_id < 25
             ]
         }
 }
