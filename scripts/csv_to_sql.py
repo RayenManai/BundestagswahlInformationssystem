@@ -49,15 +49,15 @@ def csv_wahlende():
 
 
 if __name__ == '__main__':
-    #results = csv_to_dict(**CSV_MAPPER['btw21_wahlkreisnamen_utf8.csv']['format'])
-    #print(results)
-    #mapping = CSV_MAPPER['btw21_wahlkreisnamen_utf8.csv']['mapping']
-    #print(mapping)
-    #dict_to_sql(results, mapping)
+    #insert Wahlkreisen
+    results = csv_to_dict(**CSV_MAPPER['btw21_wahlkreisnamen_utf8.csv']['format'])
+    mapping = CSV_MAPPER['btw21_wahlkreisnamen_utf8.csv']['mapping']
+    dict_to_sql(results, mapping)
+    #insert ZweitstimmeErgebnisse 2017
     results = csv_to_dict(**CSV_MAPPER['btwkr21_umrechnung_btw17.csv']['format'])
     mapping = CSV_MAPPER['btwkr21_umrechnung_btw17.csv']['mapping']
     dict_to_sql(results, mapping)
+    #insert ZweitstimmeErgebnisse 2021
     results = csv_to_dict(**CSV_MAPPER['kerg.csv']['format'])
-    #print(results)
     mapping = CSV_MAPPER['kerg.csv']['mapping']
     dict_to_sql(results, mapping)

@@ -145,6 +145,7 @@ CSV_MAPPER = {
 }
 
 if __name__ == '__main__':
+    #insert Parteien
     engine = create_engine(DATABASE_URL, echo=True)
     Base.metadata.create_all(engine)
     new_session = sessionmaker(bind=engine)

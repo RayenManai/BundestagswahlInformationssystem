@@ -154,9 +154,9 @@ if __name__ == "__main__":
         filter_attribute='Kennzeichen',
         filter_value='ERSTSTIMMENBEWERBER',
     )
-
+    #insert DirektKandidaten
     store_direktkandidaten(parsed_data, session)
-
+    #insert ErststimmeErgebnisse 2021
     store_erststimme_ergebnisse2021(parsed_data,session)
 
     session.close()
