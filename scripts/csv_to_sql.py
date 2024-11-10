@@ -40,6 +40,7 @@ def csv_wahlberechtigte():
     return list(map(lambda entry: {'wahlkreisId': int(entry['Nr']),
                                    'wahlberechtigte': int(entry['Wahlberechtigte; Erststimmen; Endgültig'])},
                 filter(lambda entry: len(entry['Nr']) == 3, dictionary_list)))
+
 def csv_wahlende():
     dictionary_list = csv_to_dict('../csv_data/kerg.csv', delimiter=';', ignore_rows=[0, 1], header_rows=3)
     return list(map(lambda entry: {'wahlkreisId': int(entry['Nr']),
