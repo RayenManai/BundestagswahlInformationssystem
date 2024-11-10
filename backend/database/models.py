@@ -7,7 +7,7 @@ class Partei(Base):
     __tablename__ = 'Partei'
     parteiId = Column(Integer, primary_key=True)
     parteiName = Column(String(100), nullable=False, unique=True)
-    kurzbezeichnung = Column(String(10), nullable=False, unique=True)
+    kurzbezeichnung = Column(String(25), nullable=False, unique=True)
 
 class Wahlkreis(Base):
     __tablename__ = 'Wahlkreis'
