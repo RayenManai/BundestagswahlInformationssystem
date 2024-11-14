@@ -23,13 +23,11 @@ class ZweitstimmeErgebnis {
 }
 
 class Erststimme {
-   + StimmzettelId : int
    + KandidatId : int
    + Jahr: int
 }
 
 class Zweitstimme {
-   + StimmzettelId : int
    + ParteiId : int
    + WahlkreisId: int
    + Jahr: int
@@ -39,7 +37,6 @@ class Wahlkreis {
   + Name: String
   + WKId: int
   + Bundesland: String
-  + Anzahlwahlberechtigte: int
 }
 
 class WahlkreisWahlInfo {
@@ -63,7 +60,7 @@ class BundeslandStruktur {
 }
 
 class Kandidat {
-  + Id: int
+  + KandidatId: int
   + Titel: String
   + Name: String
   + Vorname: String
@@ -71,7 +68,7 @@ class Kandidat {
 }
 
 class DirektKandidatur {
-  + Id: int
+  + KandidatId: int
   + Jahr: int
   + WahlkreisId: int
 }

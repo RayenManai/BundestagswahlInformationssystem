@@ -40,7 +40,7 @@ bspw. Heatmaps oder geografische Darstellungen der Ergebnisse nach Region oder S
 - **Datenbankmanagementsystem (DBMS):**
 Zur Speicherung der Einzelstimmen und Wahldaten. Die Datenbank wird verschlüsselt, um die Sicherheit und Anonymität der Daten zu gewährleisten.
 Das Datenmodell besteht aus den folgenden Entitäten und Relationen:
-![UML Diagramm](./resources/wahlen.png)
+![UML Diagramm](../resources/wahlen.png)
 - **Backend (Application Server):** besteht aus Server, die es ermöglichen:
   - Die Analyse- und Vergleich-Anfragen der Nutzer zu verarbeiten.
   - Die Einzelstimmen-anfragen an den Wahltagen zu überprüfen und in das DBMS zu speichern.
@@ -50,7 +50,7 @@ Das Datenmodell besteht aus den folgenden Entitäten und Relationen:
   - Eine benutzerfreundliche Schnittstelle für die Stimmabgabe.
 
 #### Komponenten-Interaktion
-![Architektur](./resources/Architektur.png)
+![Architektur](../resources/Architektur.png)
 - Nutzer dürfen jederzeit die vorherigen Wahlergebnisse ansehen, analysieren und Wahlergebnissen miteinander vergleichen, in dem sie Anfragen zum Server der öffentlichen Ergebnisse schickt. 
 - Der Server der öffentlichen Ergebnisse lädt sie aus der Datenbank, die alle öffentlichen Ergebnisse (insb. von den Jahren 2017 und 2021) speichert.
 - Die Stimmen werden in Wahllokalen abgegeben, wobei die Stimmabgabe als Anfrage zum Stimmen-Server geschickt. 
