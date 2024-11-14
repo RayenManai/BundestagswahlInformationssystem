@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, CheckConstraint, Float, ForeignKeyConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, CheckConstraint, Float, ForeignKeyConstraint, \
+    UniqueConstraint
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -44,8 +45,12 @@ class Kandidat(Base):
     kandidatId = Column(Integer, primary_key=True)
     titel = Column(String(15))
     name = Column(String(100), nullable=False)
+    geburtsjahr  = Column(Integer, nullable=False)
     vorname = Column(String(100), nullable=False)
     parteiId = Column(Integer, ForeignKey('Partei.parteiId'))
+    __table_args__ = (
+        UniqueConstraint('name', 'vorname', 'geburtsjahr', name='Kandidat Unicity'),
+    )
 
 
 class DirektKandidatur(Base):

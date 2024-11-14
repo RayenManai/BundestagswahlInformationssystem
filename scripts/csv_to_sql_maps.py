@@ -1,7 +1,11 @@
+import warnings
+from symtable import Function
+import loguru
+
 from backend.database.config import DATABASE_URL
 from backend.database.models import *
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, with_parent
 
 
 class CSVKey:
@@ -26,6 +30,23 @@ class CSVKey:
             return self.type_default[self.value_type]
 
 
+class CSVKeys:
+    keys: list[CSVKey]
+
+    def __init__(self, values: list[str], value_types: list[type]) -> None:
+        self.keys = [CSVKey(value, value_type) for value, value_type in zip(values, value_types)]
+
+    def as_type(self, texts: list[str]):
+        result = []
+        for key, text in zip(self.keys, texts):
+            result.append(key.as_type(text))
+        return result
+
+    @property
+    def value(self):
+        return [keys.value for keys in self.keys]
+
+
 class DirectValue[_T]:
     value: _T
 
@@ -33,7 +54,7 @@ class DirectValue[_T]:
         self.value = value
 
 
-CellValue = CSVKey | DirectValue
+CellValue = CSVKey | DirectValue | tuple[CSVKey, any] | tuple[CSVKeys, any]
 
 PARTY_MAPPER = [
     (1, 'CDU', 'Christlich Demokratische Union Deutschlands'),
@@ -85,6 +106,42 @@ PARTY_MAPPER = [
     (47, 'THP', 'Thüringer Heimatpartei')
 ]
 
+def get_partei_id_from_kurzbezeichnung(bezeichnung: str):
+    if 'EB:' in bezeichnung:
+        return None
+    l = list(filter(lambda x:  bezeichnung== x[1], PARTY_MAPPER))
+    if len(l) == 0:
+        warnings.warn(f"Party {bezeichnung} not found")
+        return None
+    return l[0][0]
+
+def get_kandidat_id_from_personal_data(vorname: str, nachname: str, geburtsjahr: int):
+    engine = create_engine(DATABASE_URL, echo=True)
+    Base.metadata.create_all(engine)
+    new_session = sessionmaker(bind=engine)
+    with new_session() as session:
+        kandidat_id = session.query(Kandidat.kandidatId).where(Kandidat.vorname == vorname and Kandidat.name == nachname and Kandidat.geburtsjahr == geburtsjahr)[0]
+        return kandidat_id
+
+BUNDESLAND_MAPPER = [
+    ('BW', 'Baden-Wuerttemberg'),
+    ('BY', 'Bayern'),
+    ('BE', 'Berlin'),
+    ('BB', 'Brandenburg'),
+    ('HB', 'Bremen'),
+    ('HH', 'Hamburg'),
+    ('HE', 'Hessen'),
+    ('MV', 'Mecklenburg-Vorpemmern'),
+    ('NI', 'Niedersachsen'),
+    ('NW', 'Nordrhein-Westfalen'),
+    ('RP', 'Rheinland-Pfalz'),
+    ('SL', 'Saarland'),
+    ('SN', 'Sachsen'),
+    ('ST', 'Sachsen-Anhalt'),
+    ('SH', 'Schleswig-Holstein'),
+    ('TH', 'Thueringen')
+    ]
+
 CSV_MAPPER = {
     'btw21_wahlkreisnamen_utf8.csv':
         {
@@ -98,8 +155,8 @@ CSV_MAPPER = {
                 [
                     {Wahlkreis.wahlkreisName: CSVKey('WKR_NAME', str),
                      Wahlkreis.wahlkreisId: CSVKey('WKR_NR', int),
-                     Wahlkreis.bundesland: CSVKey('LAND_ABK', int),
-                     Wahlkreis.anzahlwahlberechtigte: DirectValue[int](0)}
+                     Wahlkreis.bundesland: CSVKey('LAND_ABK', str)
+                     }
                 ]
             }
         },
@@ -141,11 +198,81 @@ CSV_MAPPER = {
                          } for (party_id, _, name) in PARTY_MAPPER
                     ]
                 }
+        },
+    'kandidaten_2017.csv':
+        {
+            'format': {
+                'csv_file': '../csv_data/kandidaten_2017.csv',
+                'delimiter': ';',
+                'ignore_rows': [],
+                'header_rows': 1,
+            },
+            'mapping': {
+
+            }
+        },
+    'kandidaturen_2021.csv':
+        {
+            'format': {
+                'csv_file': '../csv_data/kandidaturen_2021.csv',
+                'delimiter': ';',
+                'ignore_rows': [],
+                'header_rows': 1,
+            },
+            'mapping': {
+                Kandidat: [
+                    {Kandidat.titel: CSVKey('Titel', str),
+                     Kandidat.parteiId: (CSVKey('Gruppenname', str), get_partei_id_from_kurzbezeichnung),
+                     Kandidat.vorname: CSVKey('Vornamen', str),
+                     Kandidat.name: CSVKey('Nachname', str),
+                     Kandidat.geburtsjahr: CSVKey('Geburtsjahr', int),
+                     }
+                ]
+            }
+        },
+    'kandidatur': {
+        'format': {
+            'csv_file': '../csv_data/kandidaturen_2021.csv',
+            'delimiter': ';',
+            'ignore_rows': [],
+            'header_rows': 1,
+        },
+        'mapping': {
+                DirektKandidatur: [
+                    {DirektKandidatur.kandidatId: (CSVKeys(['Vornamen', 'Nachname', 'Geburtsjahr'], [str, str, int]),
+                                                   lambda l: get_kandidat_id_from_personal_data(l[0], l[1], l[2])),
+                     DirektKandidatur.jahr: DirectValue[int](2021),
+                     DirektKandidatur.wahlkreisId: CSVKey('Gebietsnummer', int),
+                     DirektKandidatur.anzahlstimmen: DirectValue[int](0),
+                     }
+                ],
         }
+    },
+    'parteiliste': {
+        'format': {
+            'csv_file': '../csv_data/kandidaturen_2021.csv',
+            'delimiter': ';',
+            'ignore_rows': [],
+            'header_rows': 1,
+        },
+        'mapping': {
+
+
+                ParteiListe: [
+                    {
+                        ParteiListe.kandidatId: (CSVKeys(['Vornamen', 'Nachname', 'Geburtsjahr'], [str, str, int]),
+                                                   lambda l: get_kandidat_id_from_personal_data(l[0], l[1], l[2])),
+                        ParteiListe.parteiId: (CSVKey('Gruppenname', str), get_partei_id_from_kurzbezeichnung),
+                        ParteiListe.jahr: DirectValue[int](2021),
+                        ParteiListe.listenPlatz: CSVKey('ListenPlatz', str),
+                    }
+                ]
+        }
+    }
 }
 
-if __name__ == '__main__':
-    #insert Parteien
+
+def create_partei():
     engine = create_engine(DATABASE_URL, echo=True)
     Base.metadata.create_all(engine)
     new_session = sessionmaker(bind=engine)
@@ -153,3 +280,17 @@ if __name__ == '__main__':
         for party in PARTY_MAPPER:
             session.add(Partei(parteiId=party[0], parteiName=party[2], kurzbezeichnung=party[1]))
         session.commit()
+
+def create_bundesland():
+    engine = create_engine(DATABASE_URL, echo=True)
+    Base.metadata.create_all(engine)
+    new_session = sessionmaker(bind=engine)
+    with new_session() as session:
+        for bd_land in BUNDESLAND_MAPPER:
+            session.add(Bundesland(kurzbezeichnung=bd_land[0], name=bd_land[1]))
+        session.commit()
+
+
+if __name__ == '__main__':
+    #insert Parteien
+    create_bundesland()
