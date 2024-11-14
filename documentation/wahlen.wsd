@@ -42,10 +42,37 @@ class Wahlkreis {
   + Anzahlwahlberechtigte: int
 }
 
-class DirektKandidat {
-  + Id: int
+class WahlkreisWahlInfo {
+  + WKId: int
+  + Jahr: int
+  + Anzahlwahlberechtigte: int
+  + AnzahlWaehlende: int
+}
+
+class Bundesland {
   + Name: String
+  + Kurzbezeichnung: String
+  + Bevoelkerung: int
+}
+
+class BundeslandStruktur {
+  + Kurzbezeichnung: String
+  + Jahr: int
+  + Bevoelkerung: int
+  + flaeche: float
+}
+
+class Kandidat {
+  + Id: int
+  + Titel: String
+  + Name: String
+  + Vorname: String
   + ParteiId: int
+}
+
+class DirektKandidatur {
+  + Id: int
+  + Jahr: int
   + WahlkreisId: int
 }
 
@@ -55,15 +82,37 @@ class Partei {
   + Kurzbezeichnung: String
 }
 
-DirektKandidat " *  " --> " 0..1 " Partei
+class ParteiListen {
+  + ParteiId: int
+  + Jahr: int
+  + KandidatId: int
+  + ListenPlatz: int
+}
 
-DirektKandidat " * " --> " 1 " Wahlkreis
+
+
+Wahlkreis " * " --> " 1 " Bundesland 
+
+WahlkreisWahlInfo " * " --> " 1 " Wahlkreis
+
+BundeslandStruktur " * " --> " 1 " Bundesland
+
+
+ParteiListen " * " --> " 1 " Partei
+
+ParteiListen " * " -->  " * " Kandidat
+
+Kandidat " *  " --> " 0..1 " Partei
+
+Kandidat " 1 " <-- " * " DirektKandidatur
+
+DirektKandidatur " * " --> " 1 " Wahlkreis
 
 Zweitstimme "  * " --> " 1 " Partei
 
 Zweitstimme " * " --> " 1 " Wahlkreis
 
-Erststimme " * " --> " 1 " DirektKandidat
+Erststimme " * " --> " 1 " DirektKandidatur
 
 Ergebnisse  " * "  --> " * "  Partei
 
