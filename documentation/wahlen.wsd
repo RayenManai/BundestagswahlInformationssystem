@@ -9,28 +9,23 @@ class Ergebnisse {
   + AusgleichsMandate: int
 }
 
-class ErststimmeErgebnis {
-   + KandidatId : int
-   + Jahr : int
-   + AnzahlStimmen: int
+class Erststimme {
+   + id: int
+   + KandidaturId : int
 }
 
+
 class ZweitstimmeErgebnis {
+   + id: int
    + ParteiId : int
    + WahlkreisId: int
    + Jahr: int
    + AnzahlStimmen: int
-}
-
-class Erststimme {
-   + KandidatId : int
-   + Jahr: int
 }
 
 class Zweitstimme {
-   + ParteiId : int
-   + WahlkreisId: int
-   + Jahr: int
+   + id: int
+   + ZSErgebnisId: int
 }
 
 class Wahlkreis {
@@ -49,7 +44,6 @@ class WahlkreisWahlInfo {
 class Bundesland {
   + Name: String
   + Kurzbezeichnung: String
-  + Bevoelkerung: int
 }
 
 class BundeslandStruktur {
@@ -68,9 +62,11 @@ class Kandidat {
 }
 
 class DirektKandidatur {
+  + kandidaturId: int
   + KandidatId: int
   + Jahr: int
   + WahlkreisId: int
+  + AnzahlStimmen: int
 }
 
 class Partei {
@@ -105,17 +101,16 @@ Kandidat " 1 " <-- " * " DirektKandidatur
 
 DirektKandidatur " * " --> " 1 " Wahlkreis
 
-Zweitstimme "  * " --> " 1 " Partei
+ZweitstimmeErgebnis "  * " --> " 1 " Partei
 
-Zweitstimme " * " --> " 1 " Wahlkreis
+ZweitstimmeErgebnis " * " --> " 1 " Wahlkreis
 
-Erststimme " * " --> " 1 " DirektKandidatur
 
 Ergebnisse  " * "  --> " * "  Partei
 
-ZweitstimmeErgebnis " 1  " --> " * "  Zweitstimme
+Erststimme " * " --> " 1 " DirektKandidatur 
 
-ErststimmeErgebnis " 1  " --> " * "  Erststimme
+Zweitstimme " * " --> " 1 " ZweitstimmeErgebnis 
 
 
 @enduml
