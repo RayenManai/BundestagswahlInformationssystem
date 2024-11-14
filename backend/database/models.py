@@ -67,7 +67,7 @@ class ParteiListe(Base):
 class Erststimme(Base):
     __tablename__ = 'Erststimme'
     id = Column(Integer, primary_key=True)
-    kanditaturId = Column(Integer, ForeignKey('DirektKandidatur.kanditaturId'))
+    kanditaturId = Column(Integer, ForeignKey('DirektKandidatur.kandidaturId'))
 
 class Zweitstimme(Base):
     __tablename__ = 'Zweitstimme'
