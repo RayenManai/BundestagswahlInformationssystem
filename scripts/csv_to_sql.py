@@ -1,8 +1,5 @@
 import csv
 from itertools import zip_longest
-from selectors import SelectSelector
-
-from loguru import logger
 
 from scripts.csv_to_sql_maps import *
 
@@ -87,7 +84,9 @@ def create_kandidaturen_2021():
     dict_to_sql(results, mapping, pred=lambda entry: entry['Gebietsart'] == 'Wahlkreis')
 
 if __name__ == '__main__':
-    create_kandidaten_2021()
+    create_wahlkreis()
+    create_zweitstimmeErgebnisse_2017()
+    create_zweitstimmeErgebnisse_2021()
 
 
 

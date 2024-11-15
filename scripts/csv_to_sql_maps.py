@@ -1,6 +1,4 @@
 import warnings
-from symtable import Function
-import loguru
 
 from backend.database.config import DATABASE_URL
 from backend.database.models import *
@@ -103,7 +101,13 @@ PARTY_MAPPER = [
     (44, 'FAMILIE', 'Familien-Partei Deutschlands'),
     (45, 'Graue Panther', 'Graue Panther'),
     (46, 'KlimalisteBW', 'Klimaliste Baden-Württemberg'),
-    (47, 'THP', 'Thüringer Heimatpartei')
+    (47, 'THP', 'Thüringer Heimatpartei'),
+    (48, 'BGE', 'Bündnis Grundeinkommen'),
+    (49, 'DM', 'Deutsche Mitte'),
+    (50, 'MG', 'Militante Gruppe'),
+    (51, 'AD-DEMOKRATEN', 'Allianz Deutscher Demokraten'),
+    (52, 'PDV', 'Partei der Vernunft'),
+    (53, 'DIE RECHTE', 'Die Rechte – Partei für Volksabstimmung, Souveränität und Heimatschutz')
 ]
 
 def get_partei_id_from_kurzbezeichnung(bezeichnung: str):
@@ -292,5 +296,5 @@ def create_bundesland():
 
 
 if __name__ == '__main__':
-    #insert Parteien
+    create_partei()
     create_bundesland()

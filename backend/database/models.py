@@ -68,6 +68,8 @@ class ParteiListe(Base):
     jahr = Column(Integer, primary_key=True)
     kandidatId = Column(Integer, ForeignKey('Kandidat.kandidatId'), primary_key=True)
     listenPlatz = Column(Integer)
+    landAbk = Column(String(2), ForeignKey('Bundesland.kurzbezeichnung'))
+
 
 class Erststimme(Base):
     __tablename__ = 'Erststimme'
