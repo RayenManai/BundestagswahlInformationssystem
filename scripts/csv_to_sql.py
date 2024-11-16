@@ -75,8 +75,8 @@ def create_zweitstimmeErgebnisse_2021():
     dict_to_sql(results, mapping)
 
 def create_direkt_kandidaturen_2017():
-    results = csv_to_dict(**CSV_MAPPER['kandidaten_2017_v1.csv']['format'])
-    mapping = CSV_MAPPER['kandidaten_2017_v1.csv']['mapping']
+    results = csv_to_dict(**CSV_MAPPER['merged_kandidaten.csv']['format'])
+    mapping = CSV_MAPPER['merged_kandidaten.csv']['mapping']
     aggregated_results = csv_to_dict(**CSV_MAPPER['btwkr21_umrechnung_btw17.csv']['format'])
     df = pd.DataFrame.from_records(aggregated_results)
     def determine_anzahl_stimmen(partei_wahlkreis):
@@ -86,13 +86,13 @@ def create_direkt_kandidaturen_2017():
         except:
             return 0
 
-    anzahl_stimmen = (CSVKeys(values=['Gruppenname', 'WahlkreisNr'], value_types=[str, int]) , determine_anzahl_stimmen)
+    anzahl_stimmen = (CSVKeys(values=['Gruppenname', 'WahlkreisNr'], value_types=[str, float]) , determine_anzahl_stimmen)
     mapping[DirektKandidatur][0][DirektKandidatur.anzahlstimmen] = anzahl_stimmen
-    dict_to_sql(results, mapping, pred=lambda entry: entry['WahlkreisNr'] is not None and len(entry['WahlkreisNr']) > 0)
+    dict_to_sql(results, mapping, pred=lambda entry: entry['WahlkreisNr'] is not None and len(entry['WahlkreisNr']) > 0 and int(float(entry['Jahr'])) == 2017)
 
 def create_direkt_kandidaturen_2021():
-    results = csv_to_dict(**CSV_MAPPER['kandidaten_2021_v1.csv']['format'])
-    mapping = CSV_MAPPER['kandidaten_2021_v1.csv']['mapping']
+    results = csv_to_dict(**CSV_MAPPER['merged_kandidaten.csv']['format'])
+    mapping = CSV_MAPPER['merged_kandidaten.csv']['mapping']
     aggregated_results = csv_to_dict(**CSV_MAPPER['kerg.csv']['format'])
     df = pd.DataFrame.from_records(aggregated_results)
     def determine_anzahl_stimmen(partei_wahlkreis):
@@ -105,7 +105,7 @@ def create_direkt_kandidaturen_2021():
 
     anzahl_stimmen = (CSVKeys(values=['Gruppenname', 'WahlkreisNr'], value_types=[str, float]) , determine_anzahl_stimmen)
     mapping[DirektKandidatur][0][DirektKandidatur.anzahlstimmen] = anzahl_stimmen
-    dict_to_sql(results, mapping, pred=lambda entry: entry['WahlkreisNr'] is not None and len(entry['WahlkreisNr']) > 0)
+    dict_to_sql(results, mapping, pred=lambda entry: entry['WahlkreisNr'] is not None and len(entry['WahlkreisNr']) > 0 and int(float(entry['Jahr'])) == 2021)
 
 
 if __name__ == '__main__':

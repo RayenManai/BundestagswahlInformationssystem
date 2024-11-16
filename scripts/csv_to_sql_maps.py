@@ -207,9 +207,9 @@ CSV_MAPPER = {
 
             }
         },
-    'kandidaten_2017_v1.csv': {
+    'merged_kandidaten.csv': {
         'format': {
-            'csv_file': 'kandidaten_2017_v1.csv',
+            'csv_file': 'merged_kandidaten.csv',
             'delimiter': ',',
             'ignore_rows': [],
             'header_rows': 1,
@@ -217,24 +217,7 @@ CSV_MAPPER = {
         'mapping': {
             DirektKandidatur: [
                 {DirektKandidatur.kandidatId: (CSVKey('id', float), int),
-                 DirektKandidatur.jahr: DirectValue[int](2017),
-                 DirektKandidatur.wahlkreisId: CSVKey('WahlkreisNr', int),
-                 DirektKandidatur.anzahlstimmen: DirectValue[float](0.),
-                 }
-            ]
-        }
-    },
-    'kandidaten_2021_v1.csv': {
-        'format': {
-            'csv_file': 'kandidaten_2021_v1.csv',
-            'delimiter': ',',
-            'ignore_rows': [],
-            'header_rows': 1,
-        },
-        'mapping': {
-            DirektKandidatur: [
-                {DirektKandidatur.kandidatId: (CSVKey('id', float), int),
-                 DirektKandidatur.jahr: DirectValue[int](2021),
+                 DirektKandidatur.jahr: (CSVKey('Jahr', float), int),
                  DirektKandidatur.wahlkreisId: (CSVKey('WahlkreisNr', float), int),
                  DirektKandidatur.anzahlstimmen: DirectValue[float](0.),
                  }
