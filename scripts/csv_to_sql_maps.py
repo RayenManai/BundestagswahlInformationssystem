@@ -3,7 +3,7 @@ import warnings
 from backend.database.config import DATABASE_URL
 from backend.database.models import *
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, with_parent
+from sqlalchemy.orm import sessionmaker
 
 
 class CSVKey:
@@ -110,22 +110,14 @@ PARTY_MAPPER = [
     (53, 'DIE RECHTE', 'Die Rechte – Partei für Volksabstimmung, Souveränität und Heimatschutz')
 ]
 
-def get_partei_id_from_kurzbezeichnung(bezeichnung: str):
+def get_partei_from_kurzbezeichnung(bezeichnung: str) -> tuple[int | None, str | None, str | None]:
     if 'EB:' in bezeichnung:
-        return None
+        return None, None, None
     l = list(filter(lambda x:  bezeichnung== x[1], PARTY_MAPPER))
     if len(l) == 0:
         warnings.warn(f"Party {bezeichnung} not found")
-        return None
-    return l[0][0]
-
-def get_kandidat_id_from_personal_data(vorname: str, nachname: str, geburtsjahr: int):
-    engine = create_engine(DATABASE_URL, echo=True)
-    Base.metadata.create_all(engine)
-    new_session = sessionmaker(bind=engine)
-    with new_session() as session:
-        kandidat_id = session.query(Kandidat.kandidatId).where(Kandidat.vorname == vorname and Kandidat.name == nachname and Kandidat.geburtsjahr == geburtsjahr)[0]
-        return kandidat_id
+        return None, None, None
+    return l[0]
 
 BUNDESLAND_MAPPER = [
     ('BW', 'Baden-Wuerttemberg'),
@@ -199,7 +191,7 @@ CSV_MAPPER = {
                          ZweitstimmeErgebnisse.jahr: DirectValue[int](2021),
                          ZweitstimmeErgebnisse.wahlkreisId: CSVKey('Nr', int),
                          ZweitstimmeErgebnisse.anzahlstimmen: CSVKey(f'{name}; Zweitstimmen; Endgültig', int)
-                         } for (party_id, _, name) in PARTY_MAPPER
+                         } for (party_id, _, name) in PARTY_MAPPER if party_id < 48
                     ]
                 }
         },
@@ -215,62 +207,38 @@ CSV_MAPPER = {
 
             }
         },
-    'kandidaturen_2021.csv':
-        {
-            'format': {
-                'csv_file': '../csv_data/kandidaturen_2021.csv',
-                'delimiter': ';',
-                'ignore_rows': [],
-                'header_rows': 1,
-            },
-            'mapping': {
-                Kandidat: [
-                    {Kandidat.titel: CSVKey('Titel', str),
-                     Kandidat.parteiId: (CSVKey('Gruppenname', str), get_partei_id_from_kurzbezeichnung),
-                     Kandidat.vorname: CSVKey('Vornamen', str),
-                     Kandidat.name: CSVKey('Nachname', str),
-                     Kandidat.geburtsjahr: CSVKey('Geburtsjahr', int),
-                     }
-                ]
-            }
-        },
-    'kandidatur': {
+    'kandidaten_2017_v1.csv': {
         'format': {
-            'csv_file': '../csv_data/kandidaturen_2021.csv',
-            'delimiter': ';',
+            'csv_file': 'kandidaten_2017_v1.csv',
+            'delimiter': ',',
             'ignore_rows': [],
             'header_rows': 1,
         },
         'mapping': {
-                DirektKandidatur: [
-                    {DirektKandidatur.kandidatId: (CSVKeys(['Vornamen', 'Nachname', 'Geburtsjahr'], [str, str, int]),
-                                                   lambda l: get_kandidat_id_from_personal_data(l[0], l[1], l[2])),
-                     DirektKandidatur.jahr: DirectValue[int](2021),
-                     DirektKandidatur.wahlkreisId: CSVKey('Gebietsnummer', int),
-                     DirektKandidatur.anzahlstimmen: DirectValue[int](0),
-                     }
-                ],
+            DirektKandidatur: [
+                {DirektKandidatur.kandidatId: (CSVKey('id', float), int),
+                 DirektKandidatur.jahr: DirectValue[int](2017),
+                 DirektKandidatur.wahlkreisId: CSVKey('WahlkreisNr', int),
+                 DirektKandidatur.anzahlstimmen: DirectValue[float](0.),
+                 }
+            ]
         }
     },
-    'parteiliste': {
+    'kandidaten_2021_v1.csv': {
         'format': {
-            'csv_file': '../csv_data/kandidaturen_2021.csv',
-            'delimiter': ';',
+            'csv_file': 'kandidaten_2021_v1.csv',
+            'delimiter': ',',
             'ignore_rows': [],
             'header_rows': 1,
         },
         'mapping': {
-
-
-                ParteiListe: [
-                    {
-                        ParteiListe.kandidatId: (CSVKeys(['Vornamen', 'Nachname', 'Geburtsjahr'], [str, str, int]),
-                                                   lambda l: get_kandidat_id_from_personal_data(l[0], l[1], l[2])),
-                        ParteiListe.parteiId: (CSVKey('Gruppenname', str), get_partei_id_from_kurzbezeichnung),
-                        ParteiListe.jahr: DirectValue[int](2021),
-                        ParteiListe.listenPlatz: CSVKey('ListenPlatz', str),
-                    }
-                ]
+            DirektKandidatur: [
+                {DirektKandidatur.kandidatId: (CSVKey('id', float), int),
+                 DirektKandidatur.jahr: DirectValue[int](2021),
+                 DirektKandidatur.wahlkreisId: (CSVKey('WahlkreisNr', float), int),
+                 DirektKandidatur.anzahlstimmen: DirectValue[float](0.),
+                 }
+            ]
         }
     }
 }

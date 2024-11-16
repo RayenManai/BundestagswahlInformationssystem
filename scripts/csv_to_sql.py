@@ -1,6 +1,8 @@
 import csv
+from collections.abc import Callable
 from itertools import zip_longest
 
+import pandas as pd
 from scripts.csv_to_sql_maps import *
 
 
@@ -15,7 +17,8 @@ def csv_to_dict(csv_file: str, delimiter: str = ';', header_rows: int = 0, ignor
     return dict_list
 
 
-def dict_to_sql(dict_list: list[dict], table_key_map: dict[declarative_base, list[dict[Column, CellValue]]], pred: any = lambda _ : True) -> None:
+def dict_to_sql(dict_list: list[dict], table_key_map: dict[declarative_base, list[dict[Column, CellValue]]],
+                pred: Callable = lambda _ : True) -> None:
     """
     inserts in the tables the values from the dictionary list into the database
     :param dict_list: has the format [{'key1': value1, 'key2': value2, ...}, {'key1': value3, 'key2': value4, ...}, ...]
@@ -28,14 +31,14 @@ def dict_to_sql(dict_list: list[dict], table_key_map: dict[declarative_base, lis
     new_session = sessionmaker(bind=engine)
     with new_session() as session:
         for entry in dict_list:
-            for table, columns_to_key in table_key_map.items():
-                for column_to_key in columns_to_key:
-                    column_to_value = {column.key: key.as_type(entry[key.value]) if isinstance(key, CSVKey) else
-                    key.value if isinstance(key, CSVKey) or isinstance(key, DirectValue) else
-                    key[1](key[0].as_type(entry[key[0].value])) if isinstance(key[0], CSVKey) else
-                    key[1](key[0].as_type([entry[key[0].value[i]] for i in range(len(key[0].value))]))
-                                       for column, key in column_to_key.items()}
-                    if pred(entry):
+            if pred(entry):
+                for table, columns_to_key in table_key_map.items():
+                    for column_to_key in columns_to_key:
+                        column_to_value = {column.key: key.as_type(entry[key.value]) if isinstance(key, CSVKey) else
+                        key.value if isinstance(key, CSVKey) or isinstance(key, DirectValue) else
+                        key[1](key[0].as_type(entry[key[0].value])) if isinstance(key[0], CSVKey) else
+                        key[1](key[0].as_type([entry[key[0].value[i]] for i in range(len(key[0].value))]))
+                                           for column, key in column_to_key.items()}
                         session.add(table(**column_to_value))
         session.commit()
 
@@ -71,22 +74,46 @@ def create_zweitstimmeErgebnisse_2021():
     mapping = CSV_MAPPER['kerg.csv']['mapping']
     dict_to_sql(results, mapping)
 
-def create_kandidaten_2021():
-    # insert Kandidaten 2021
-    results = csv_to_dict(**CSV_MAPPER['kandidaturen_2021.csv']['format'])
-    mapping = CSV_MAPPER['kandidaturen_2021.csv']['mapping']
-    dict_to_sql(results, mapping)
+def create_direkt_kandidaturen_2017():
+    results = csv_to_dict(**CSV_MAPPER['kandidaten_2017_v1.csv']['format'])
+    mapping = CSV_MAPPER['kandidaten_2017_v1.csv']['mapping']
+    aggregated_results = csv_to_dict(**CSV_MAPPER['btwkr21_umrechnung_btw17.csv']['format'])
+    df = pd.DataFrame.from_records(aggregated_results)
+    def determine_anzahl_stimmen(partei_wahlkreis):
+        partei, wahlkreis = partei_wahlkreis[0], partei_wahlkreis[1]
+        try:
+            return int(df[df['Wkr-Nr.'].astype(int) == int(wahlkreis)][f'{partei}; Erststimmen'].iloc[0])
+        except:
+            return 0
 
-def create_kandidaturen_2021():
-    # insert Kandidaturen 2021
-    results = csv_to_dict(**CSV_MAPPER['kandidatur']['format'])
-    mapping = CSV_MAPPER['kandidatur']['mapping']
-    dict_to_sql(results, mapping, pred=lambda entry: entry['Gebietsart'] == 'Wahlkreis')
+    anzahl_stimmen = (CSVKeys(values=['Gruppenname', 'WahlkreisNr'], value_types=[str, int]) , determine_anzahl_stimmen)
+    mapping[DirektKandidatur][0][DirektKandidatur.anzahlstimmen] = anzahl_stimmen
+    dict_to_sql(results, mapping, pred=lambda entry: entry['WahlkreisNr'] is not None and len(entry['WahlkreisNr']) > 0)
+
+def create_direkt_kandidaturen_2021():
+    results = csv_to_dict(**CSV_MAPPER['kandidaten_2021_v1.csv']['format'])
+    mapping = CSV_MAPPER['kandidaten_2021_v1.csv']['mapping']
+    aggregated_results = csv_to_dict(**CSV_MAPPER['kerg.csv']['format'])
+    df = pd.DataFrame.from_records(aggregated_results)
+    def determine_anzahl_stimmen(partei_wahlkreis):
+        partei, wahlkreis = partei_wahlkreis[0], partei_wahlkreis[1]
+        try:
+            partei_name = get_partei_from_kurzbezeichnung(partei)[2]
+            return int(df[df['Nr'].astype(int) == int(wahlkreis)][f'{partei_name}; Erststimmen; Endgültig'].iloc[0])
+        except:
+            return 0
+
+    anzahl_stimmen = (CSVKeys(values=['Gruppenname', 'WahlkreisNr'], value_types=[str, float]) , determine_anzahl_stimmen)
+    mapping[DirektKandidatur][0][DirektKandidatur.anzahlstimmen] = anzahl_stimmen
+    dict_to_sql(results, mapping, pred=lambda entry: entry['WahlkreisNr'] is not None and len(entry['WahlkreisNr']) > 0)
+
 
 if __name__ == '__main__':
-    create_wahlkreis()
-    create_zweitstimmeErgebnisse_2017()
-    create_zweitstimmeErgebnisse_2021()
+    #create_wahlkreis()
+    #create_zweitstimmeErgebnisse_2017()
+    #create_zweitstimmeErgebnisse_2021()
+    create_direkt_kandidaturen_2017()
+    #create_direkt_kandidaturen_2021()
 
 
 

@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 from backend.database.config import DATABASE_URL
 from backend.database.models import Kandidat, DirektKandidatur, ParteiListe
-from scripts.csv_to_sql_maps import get_partei_id_from_kurzbezeichnung
+from scripts.csv_to_sql_maps import get_partei_from_kurzbezeichnung
 
 
 def insert_candidates():
@@ -33,7 +33,7 @@ def insert_candidates():
                     geburtsjahr=row['Geburtsjahr'],
                     name=row['Nachname'],
                     vorname=row['Vornamen'],
-                    parteiId=get_partei_id_from_kurzbezeichnung(row['Gruppenname']),
+                    parteiId=get_partei_from_kurzbezeichnung(row['Gruppenname'])[0],
                 )
                 session.add(entry_kandidat)
                 existing_kandidats.add(int(row['id']))
@@ -102,7 +102,7 @@ def insert_partei_listen():
                 entry_partei_listen = ParteiListe(
                     kandidatId=row['id'],
                     jahr=row['Jahr'],
-                    parteiId=get_partei_id_from_kurzbezeichnung(row['Gruppenname']),
+                    parteiId=get_partei_from_kurzbezeichnung(row['Gruppenname'])[0],
                     listenPlatz=int(row['Listenplatz']),
                     landAbk=row['LandId']
                 )
@@ -117,6 +117,6 @@ def insert_partei_listen():
         session.close()
 
 if __name__ == '__main__':
-    #insert_candidates()
-    #insert_direktkandidaturs()
+    insert_candidates()
+    insert_direktkandidaturs()
     insert_partei_listen()
