@@ -138,6 +138,25 @@ BUNDESLAND_MAPPER = [
     ('TH', 'Thueringen')
     ]
 
+BUNDESLAND_Struktur_MAPPER = [
+    ('BW', 2021, 9313413, 35748),
+    ('BY', 2021, 11328866, 70542),
+    ('BE', 2021, 2942960, 891),
+    ('BB', 2021, 2397701, 29654),
+    ('HB', 2021, 548941, 419),
+    ('HH', 2021, 1537766, 755),
+    ('HE', 2021, 5222158, 21116),
+    ('MV', 2021, 1532412, 23295),
+    ('NI', 2021, 7207587, 47710),
+    ('NW', 2021, 15415642, 34113),
+    ('RP', 2021, 3610865, 19858),
+    ('SL', 2021, 865191, 2572),
+    ('SN', 2021, 3826905, 18450),
+    ('ST', 2021, 2056177, 20464),
+    ('SH', 2021, 2659792, 15804),
+    ('TH', 2021, 1996822, 16202)
+    ]
+
 CSV_MAPPER = {
     'btw21_wahlkreisnamen_utf8.csv':
         {
@@ -245,7 +264,16 @@ def create_bundesland():
             session.add(Bundesland(kurzbezeichnung=bd_land[0], name=bd_land[1]))
         session.commit()
 
+def create_bundesland_struktur():
+    engine = create_engine(DATABASE_URL, echo=True)
+    Base.metadata.create_all(engine)
+    new_session = sessionmaker(bind=engine)
+    with new_session() as session:
+        for bd_land in BUNDESLAND_Struktur_MAPPER:
+            session.add(BundeslandStruktur(kurzbezeichnung=bd_land[0], jahr=bd_land[1], bevoelkerung=bd_land[2], flaeche=bd_land[3]))
+        session.commit()
 
 if __name__ == '__main__':
-    create_partei()
-    create_bundesland()
+    #create_partei()
+    #create_bundesland()
+    create_bundesland_struktur()
