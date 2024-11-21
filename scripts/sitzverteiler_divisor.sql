@@ -6,11 +6,8 @@
         WHERE jahr = 2021)
         UNION
     (WITH paddedSitze AS (
-        SELECT (CASE
-                   WHEN (SELECT SUM(sitzKontingente) FROM Oberverteilung) < 800 THEN 1.5
-                   WHEN (SELECT SUM(sitzKontingente) FROM Oberverteilung) > 800 THEN -1.5
-                   ELSE 0.5
-            END) AS factor
+        SELECT
+  AS factor
         ), intermediateIteration AS (
         SELECT kurzbezeichnung,
                bevoelkerung,
