@@ -1,5 +1,6 @@
-from sqlalchemy import create_engine, select, Select
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy import create_engine, select, Select, func
+from sqlalchemy.orm import sessionmaker
+from pprint import pprint
 
 from backend.database.config import DATABASE_URL
 from backend.database.models import *
@@ -18,9 +19,12 @@ def statement_generator(stimme: int, wahlkreisId: int=0, jahr: int=2021, until: 
 
 
 def erstimme_generator(wahlkreisId: int=0, jahr: int=2021, until: int=-1) -> None:
-    new_session, stmt = statement_generator(stimme=1, wahlkreisId=wahlkreisId, jahr=jahr)
+    new_session, stmt = statement_generator(stimme=1, wahlkreisId=wahlkreisId, jahr=jahr, until=until)
     with (new_session() as session):
         rows = session.execute(stmt)
+        #subquery = stmt.subquery()
+        #print(f'This has {session.scalar(select(func.count()).select_from(subquery))} rows')
+        #[pprint(vars(row[0])) for row in rows]
         for row in rows:
             for _ in range(row[0].anzahlstimmen):
                 session.add(Erststimme(kanditaturId=row[0].kandidaturId))
@@ -28,7 +32,7 @@ def erstimme_generator(wahlkreisId: int=0, jahr: int=2021, until: int=-1) -> Non
 
 
 def zweitstimme_generator(wahlkreisId: int=0, jahr: int=2021, until: int=-1) -> None:
-    new_session, stmt = statement_generator(stimme=2, wahlkreisId=wahlkreisId, jahr=jahr)
+    new_session, stmt = statement_generator(stimme=2, wahlkreisId=wahlkreisId, jahr=jahr, until=until)
     with (new_session() as session):
         rows = session.execute(stmt)
         for row in rows:
