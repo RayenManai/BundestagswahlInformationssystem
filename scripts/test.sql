@@ -50,12 +50,6 @@ WITH RECURSIVE Sitzverteilung AS (
     WHERE s.total_sitze <> 598 AND iteration < 10
 )
 
--- Final output: The seat allocation when the iteration is complete
--- SELECT
---    *
--- FROM Sitzverteilung
--- ORDER BY kurzbezeichnung);
-
 SELECT
 s.kurzbezeichnung,
 s.bevoelkerung,
@@ -89,7 +83,7 @@ SELECT
     k.name,
     p."parteiId",
     p.kurzbezeichnung AS partei,
-    wk."wahlkreisName" AS wahlkreis,
+    wk."wahlkreisId" AS wahlkreisId,
     dk.anzahlStimmen AS gewonnene_stimmen,
     (dk.anzahlStimmen * 100.0 /
         (SELECT SUM(dk2.anzahlStimmen)
@@ -165,33 +159,37 @@ having SUM(zse.anzahlstimmen) <> 0;
 
 -------
 
-CREATE VIEW SH_Parteien_Sitzverteilung AS (
+CREATE VIEW Parteien_Sitzverteilung AS (
 WITH RECURSIVE Sitzverteilung AS (
     -- Initial step: Calculate the initial divisor and allocate initial seats
+
+
     SELECT
         p.partei,
-        p.bundesland,
+        ober.kurzbezeichnung,
         p.gesamtstimmen,
-        (SELECT CAST(SUM(p2.gesamtstimmen) AS FLOAT)
+        ((SELECT CAST(SUM(p2.gesamtstimmen) AS FLOAT)
          FROM partei_bundesland_zweitstimmen_neu_2021 p2
-         WHERE p2.bundesland = 'SH') / 22.0 AS divisor,
+         WHERE p2.bundesland = ober.kurzbezeichnung
+        ) / ober.sitze) - 0.0001 AS divisor,
         -- Calculate initial seat allocation
         ROUND(p.gesamtstimmen / (
-            (SELECT CAST(SUM(p2.gesamtstimmen) AS FLOAT)
+            ((SELECT CAST(SUM(p2.gesamtstimmen) AS FLOAT)
              FROM partei_bundesland_zweitstimmen_neu_2021 p2
-             WHERE p2.bundesland = 'SH') / 22.0
+             WHERE p2.bundesland = ober.kurzbezeichnung) / ober.sitze) - 0.0001
         )) AS sitze,
         0 AS iteration,
         -- Sum of initial seats for all parties in SH
         (SELECT SUM(ROUND(p2.gesamtstimmen / (
-            (SELECT CAST(SUM(p3.gesamtstimmen) AS FLOAT)
+            ((SELECT CAST(SUM(p3.gesamtstimmen) AS FLOAT)
              FROM partei_bundesland_zweitstimmen_neu_2021 p3
-             WHERE p3.bundesland = 'SH') / 22.0
-        )))
+             WHERE p3.bundesland = ober.kurzbezeichnung) / ober.sitze
+        ) - 0.0001)))
          FROM partei_bundesland_zweitstimmen_neu_2021 p2
-         WHERE p2.bundesland = 'SH') AS total_sitze
-    FROM partei_bundesland_zweitstimmen_neu_2021 p
-    WHERE p.bundesland = 'SH'
+         WHERE p2.bundesland = ober.kurzbezeichnung)
+         AS total_sitze
+    FROM partei_bundesland_zweitstimmen_neu_2021 p, Oberverteilung ober
+    WHERE p.bundesland = ober.kurzbezeichnung
 
     UNION ALL
 
@@ -200,45 +198,59 @@ WITH RECURSIVE Sitzverteilung AS (
            p.partei,
         p.bundesland,
         p.gesamtstimmen,
-        CASE
+        (CASE
             -- Calculate the new divisor based on the adjusted seat count from the previous iteration
-            WHEN s.total_sitze < 22 THEN
+            WHEN s.total_sitze < ober.sitze THEN
                 p.gesamtstimmen / (ROUND(s.sitze) + 0.5)
             ELSE
                 p.gesamtstimmen / (ROUND(s.sitze) - 0.5)
-        END AS divisor,
+        END - 0.0001) AS divisor,
         ROUND(p.gesamtstimmen /
-              CASE
-                  WHEN s.total_sitze < 22 THEN
+              (CASE
+                  WHEN s.total_sitze < ober.sitze THEN
                       p.gesamtstimmen / (ROUND(s.sitze) + 0.5)
                   ELSE
                       p.gesamtstimmen / (ROUND(s.sitze) - 0.5)
-              END
+              END - 0.0001)
         ) AS sitze,
         s.iteration + 1,
         (SELECT SUM(ROUND(p2.gesamtstimmen /
-                          CASE
-                              WHEN s.total_sitze < 22 THEN
+                          (CASE
+                              WHEN s.total_sitze < ober.sitze THEN
                                   p.gesamtstimmen / (ROUND(s.sitze) + 0.5)
                               ELSE
                                   p.gesamtstimmen / (ROUND(s.sitze) - 0.5)
-                          END))
+                          END - 0.0001)))
          FROM "partei_bundesland_zweitstimmen_neu_2021" p2
-         WHERE p2.bundesland = 'SH') AS total_sitze
-    FROM Sitzverteilung s
+         WHERE p2.bundesland = ober.kurzbezeichnung) AS total_sitze
+    FROM (Sitzverteilung s
     JOIN partei_bundesland_zweitstimmen_neu_2021 p
-    ON s.partei = p.partei
-    WHERE s.total_sitze <> 22 AND iteration < 10 AND p.bundesland = 'SH'
+    ON s.partei = p.partei) JOIN Oberverteilung ober ON p.bundesland = ober.kurzbezeichnung
+    WHERE s.total_sitze <> ober.sitze AND iteration < 1
 )
 
 SELECT
 p.partei,
 p.gesamtstimmen,
-ROUND(p.gesamtstimmen /(SELECT s.divisor from Sitzverteilung s WHERE s.total_sitze=22 LIMIT 1)) as sitze
-FROM partei_bundesland_zweitstimmen_neu_2021 p where p.bundesland='SH'
+p.bundesland,
+ROUND(p.gesamtstimmen /(SELECT s.divisor from Sitzverteilung s WHERE s.total_sitze=ober.sitze and s.kurzbezeichnung = ober.kurzbezeichnung LIMIT 1)) as sitze
+FROM partei_bundesland_zweitstimmen_neu_2021 p, Oberverteilung ober
+where p.bundesland=ober.kurzbezeichnung
 );
 
+CREATE VIEW Partei_gewonnene_Walhkreise AS (
+    SELECT b.kurzbezeichnung as bundesland, p.partei as partei, count(direkt.wahlkreisId) as wahlkreisSitze
+    FROM ((Parteien_Nach_Huerde_2021 p CROSS JOIN "Bundesland" b)  LEFT OUTER JOIN
+        (Gewahlte_direkt_kandidaten_2021 direkt JOIN "Wahlkreis" w ON direkt.wahlkreisId = w."wahlkreisId")
+        ON p."parteiId" = direkt."parteiId" and b.kurzbezeichnung = w.bundesland)
+     GROUP BY b.kurzbezeichnung, p.partei
+    );
 
 
-
+CREATE VIEW zwischenergebnis AS
+    (
+    SELECT w.bundesland, w.partei, ROUND((w.wahlkreisSitze + p.sitze) / 2.0), w.wahlkreisSitze, GREATEST(w.wahlkreisSitze, COALESCE(ROUND((w.wahlkreisSitze + p.sitze) / 2.0), w.wahlkreisSitze / 2.0)) as Greatest_round_wSitze, COALESCE(p.sitze, 0.0) as p_sitze, GREATEST(GREATEST(w.wahlkreisSitze, COALESCE(ROUND((w.wahlkreisSitze + p.sitze) / 2.0), w.wahlkreisSitze / 2.0)), COALESCE(p.sitze, 0.0)) AS MindestSitze
+    FROM Partei_gewonnene_Walhkreise w LEFT OUTER JOIN parteien_sitzverteilung p
+    ON w."partei"= p.partei and w.bundesland = p.bundesland
+    )
 
