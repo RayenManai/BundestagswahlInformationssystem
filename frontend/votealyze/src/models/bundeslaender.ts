@@ -1,0 +1,18 @@
+export const BUNDESLAENDER = [
+  { name: "Baden-Württemberg", abbreviation: "BW" },
+  { name: "Berlin", abbreviation: "BE" },
+  { name: "Bayern", abbreviation: "BY" },
+  { name: "Hamburg", abbreviation: "HH" },
+  { name: "Hessen", abbreviation: "HE" },
+  { name: "Brandenburg", abbreviation: "BB" },
+  { name: "Bremen", abbreviation: "HB" },
+  { name: "Mecklenburg-Vorpemmern", abbreviation: "MV" },
+  { name: "Niedersachsen", abbreviation: "NI" },
+  { name: "Nordrhein-Westfalen", abbreviation: "NW" },
+  { name: "Rheinland-Pfalz", abbreviation: "RP" },
+  { name: "Saarland", abbreviation: "SL" },
+  { name: "Sachsen", abbreviation: "SN" },
+  { name: "Sachsen-Anhalt", abbreviation: "ST" },
+  { name: "Schleswig-Holstein", abbreviation: "SW" },
+  { name: "Thüringen", abbreviation: "TH" },
+];
