@@ -39,11 +39,6 @@ const Select = styled.select`
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 `;
 
-const Spacer = styled.div`
-  height: 2rem;
-`;
-
-// Component
 interface FilterPanelProps {
   year: number;
   bundesland: string | null;
