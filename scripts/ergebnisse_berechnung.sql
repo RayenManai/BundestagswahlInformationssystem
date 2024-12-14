@@ -1,4 +1,20 @@
-CREATE VIEW Oberverteilung_2021 AS(
+/*
+ Die Herausforderung bestand darin, die Sainte-Laguë/Schepers-Divisor-Methode zur Berechnung des Bundestagswahlergebnisses
+ mit SQL zu implementieren.
+
+ Quelle: https://www.bundeswahlleiterin.de/dam/jcr/bf33c285-ee92-455a-a9c3-8d4e3a1ee4b4/btw21_sitzberechnung.pdf
+ Erläuterung des Verfahrens: https://www.bundeswahlleiterin.de/dam/jcr/e9eb08cc-e19e-4caa-b9f7-c69247872344/btw21_erl_sitzzuteilung.pdf
+ */
+
+
+-- Schritt 1: Wie viele Sitze stehen einem Land zu? Ausschlaggebend ist die deutsche Bevölkerung des Landes. In jedem Land wird pro Sitz in
+-- etwa die gleiche Anzahl Personen benötigt. In Summe müssen genau 598 Sitze verteilt wer-
+-- den.
+
+-- Seiten 28 - 29: Ermittlung der Divisorspanne und des endgültigen Divisors für „6.1.1 Ermittlung der Sitzkontingente der
+-- Länder nach Bevölkerungszahl“
+
+CREATE materialized view Oberverteilung_2021 AS(
 WITH RECURSIVE Sitzverteilung AS (
     -- Initial step: Start with the initial divisor and calculate initial seats
     SELECT
@@ -47,7 +63,7 @@ FROM Sitzverteilung s
 WHERE s.iteration = (SELECT MAX(iteration) FROM Sitzverteilung));
 
 ----------------------------------------------------------------------------------
-CREATE VIEW Oberverteilung_2017 AS(
+CREATE materialized VIEW Oberverteilung_2017 AS(
 WITH RECURSIVE Sitzverteilung AS (
     -- Initial step: Start with the initial divisor and calculate initial seats
     SELECT
@@ -96,7 +112,7 @@ FROM Sitzverteilung s
 WHERE s.iteration = (SELECT MAX(iteration) FROM Sitzverteilung));
 
 ----------------------------------------------------------------------------------
-CREATE VIEW Partei_Gesamt_Zweitstimmen_2021 AS
+CREATE materialized VIEW Partei_Gesamt_Zweitstimmen_2021 AS
 SELECT
     p."parteiId",
     p.kurzbezeichnung AS partei,
@@ -115,7 +131,7 @@ GROUP BY
 
 
 ----------------------------------------------------------------------------------
-CREATE VIEW Partei_Gesamt_Zweitstimmen_2017 AS
+CREATE materialized VIEW Partei_Gesamt_Zweitstimmen_2017 AS
 SELECT
     p."parteiId",
     p.kurzbezeichnung AS partei,
@@ -134,7 +150,7 @@ GROUP BY
 
 
 ----------------------------------------------------------------------------------
-CREATE VIEW Gewahlte_direkt_kandidaten_2021 AS
+CREATE materialized VIEW Gewahlte_direkt_kandidaten_2021 AS
 SELECT
     k.Titel,
     k.vorname,
@@ -162,7 +178,7 @@ WHERE
     );
 
 ----------------------------------------------------------------------------------
-CREATE VIEW Gewahlte_direkt_kandidaten_2017 AS
+CREATE materialized VIEW Gewahlte_direkt_kandidaten_2017 AS
 SELECT
     k.Titel,
     k.vorname,
@@ -191,7 +207,7 @@ WHERE
 
 
 ----------------------------------------------------------------------------------
-CREATE VIEW Parteien_Nach_Huerde_2021 AS
+CREATE materialized VIEW Parteien_Nach_Huerde_2021 AS
 SELECT
     pzs."parteiId",
     pzs.partei
@@ -205,7 +221,7 @@ WHERE pzs.percentage >= 5
 
 
 ----------------------------------------------------------------------------------
-CREATE VIEW Parteien_Nach_Huerde_2017 AS
+CREATE materialized VIEW Parteien_Nach_Huerde_2017 AS
 SELECT
     pzs."parteiId",
     pzs.partei
@@ -219,7 +235,7 @@ WHERE pzs.percentage >= 5
 
 
 ----------------------------------------------------------------------------------
-CREATE VIEW Partei_Gesamt_Zweitstimmen_neu_2021 AS
+CREATE materialized VIEW Partei_Gesamt_Zweitstimmen_neu_2021 AS
 SELECT
     pnh."parteiId",
     pnh.partei,
@@ -238,7 +254,7 @@ GROUP BY
     pnh."parteiId", pnh.partei;
 
 ----------------------------------------------------------------------------------
-CREATE VIEW Partei_Gesamt_Zweitstimmen_neu_2017 AS
+CREATE materialized VIEW Partei_Gesamt_Zweitstimmen_neu_2017 AS
 SELECT
     pnh."parteiId",
     pnh.partei,
@@ -258,7 +274,7 @@ GROUP BY
 
 
 ----------------------------------------------------------------------------------
-CREATE VIEW Partei_Bundesland_Zweitstimmen_neu_2021 AS
+CREATE materialized VIEW Partei_Bundesland_Zweitstimmen_neu_2021 AS
 SELECT
     pnh."parteiId",
     pnh.partei,
@@ -281,7 +297,7 @@ having SUM(zse.anzahlstimmen) <> 0;
 
 
 ----------------------------------------------------------------------------------
-CREATE VIEW Partei_Bundesland_Zweitstimmen_neu_2017 AS
+CREATE materialized VIEW Partei_Bundesland_Zweitstimmen_neu_2017 AS
 SELECT
     pnh."parteiId",
     pnh.partei,
@@ -302,12 +318,20 @@ GROUP BY
     pnh."parteiId", pnh.partei, wk.bundesland
 having SUM(zse.anzahlstimmen) <> 0;
 
-
 ----------------------------------------------------------------------------------
-CREATE VIEW Parteien_Sitzverteilung_2021 AS (
+
+-- Schritt 2: Wie verteilt sich das Sitzkontingent eines Landes auf die zu berücksichtigenden Parteien,
+-- die in diesem Land mit einer Landesliste angetreten sind?
+
+-- Ausschlaggebend sind die gültigen Zweitstimmen der Landeslisten. In Summe müssen ge-
+-- nau so viele Sitze verteilt werden, wie dem Land zustehen.
+
+-- Seiten 30 - 45: Ermittlung der Divisorspanne und des endgültigen Divisors für „6.1.2 Verteilung der Sitzkontingente der
+-- Länder auf die Landeslisten der Parteien“
+
+CREATE MATERIALIZED VIEW Parteien_Sitzverteilung_2021 AS (
 WITH RECURSIVE Sitzverteilung AS (
     -- Initial step: Calculate the initial divisor and allocate initial seats
-
 
     SELECT
         p.partei,
@@ -324,7 +348,7 @@ WITH RECURSIVE Sitzverteilung AS (
              WHERE p2.bundesland = ober.kurzbezeichnung) / ober.sitze) - 0.0001
         )) AS sitze,
         0 AS iteration,
-        -- Sum of initial seats for all parties in SH
+        -- Sum of initial seats for all parties
         (SELECT SUM(ROUND(p2.gesamtstimmen / (
             ((SELECT CAST(SUM(p3.gesamtstimmen) AS FLOAT)
              FROM partei_bundesland_zweitstimmen_neu_2021 p3
@@ -379,7 +403,7 @@ where s.kurzbezeichnung = gesamt.kurzbezeichnung AND s.iteration = gesamt.iterat
 
 
 ----------------------------------------------------------------------------------
-CREATE VIEW Parteien_Sitzverteilung_2017 AS (
+CREATE materialized VIEW Parteien_Sitzverteilung_2017 AS (
 WITH RECURSIVE Sitzverteilung AS (
     -- Initial step: Calculate the initial divisor and allocate initial seats
 
@@ -399,7 +423,7 @@ WITH RECURSIVE Sitzverteilung AS (
              WHERE p2.bundesland = ober.kurzbezeichnung) / ober.sitze) - 0.0001
         )) AS sitze,
         0 AS iteration,
-        -- Sum of initial seats for all parties in SH
+        -- Sum of initial seats for all parties
         (SELECT SUM(ROUND(p2.gesamtstimmen / (
             ((SELECT CAST(SUM(p3.gesamtstimmen) AS FLOAT)
              FROM partei_bundesland_zweitstimmen_neu_2017 p3
@@ -452,7 +476,7 @@ FROM Sitzverteilung s,  (SELECT kurzbezeichnung, MAX(iteration) as iteration fro
 where s.kurzbezeichnung = gesamt.kurzbezeichnung AND s.iteration = gesamt.iteration
 );
 
-CREATE VIEW Partei_gewonnene_Walhkreise_2021 AS (
+CREATE materialized VIEW Partei_gewonnene_Walhkreise_2021 AS (
     SELECT b.kurzbezeichnung as bundesland, p.partei as partei, count(direkt.wahlkreisId) as wahlkreisSitze
     FROM ((Parteien_Nach_Huerde_2021 p CROSS JOIN "Bundesland" b)  LEFT OUTER JOIN
         (Gewahlte_direkt_kandidaten_2021 direkt JOIN "Wahlkreis" w ON direkt.wahlkreisId = w."wahlkreisId")
@@ -460,7 +484,7 @@ CREATE VIEW Partei_gewonnene_Walhkreise_2021 AS (
      GROUP BY b.kurzbezeichnung, p.partei
     );
 
-CREATE VIEW Partei_gewonnene_Walhkreise_2017 AS (
+CREATE materialized VIEW Partei_gewonnene_Walhkreise_2017 AS (
     SELECT b.kurzbezeichnung as bundesland, p.partei as partei, count(direkt.wahlkreisId) as wahlkreisSitze
     FROM ((Parteien_Nach_Huerde_2017 p CROSS JOIN "Bundesland" b)  LEFT OUTER JOIN
         (Gewahlte_direkt_kandidaten_2017 direkt JOIN "Wahlkreis" w ON direkt.wahlkreisId = w."wahlkreisId")
@@ -468,36 +492,58 @@ CREATE VIEW Partei_gewonnene_Walhkreise_2017 AS (
      GROUP BY b.kurzbezeichnung, p.partei
     );
 
-CREATE VIEW ZwischenErgebnis_Mindestsitze_2021 AS
+
+--Zwischenergebnis: Wie viele Sitze bekommt eine Partei, nachdem Schritt 1 und 2 durchgeführt wurden?
+
+-- Innerhalb eines Bundeslandes wird die Anzahl der gewonnenen Wahlkreise festgestellt
+-- und der (kaufmännisch gerundete) Mittelwert aus der nach Zweitstimmen ermittelten Sitz-
+-- zahl und der Anzahl der gewonnenen Wahlkreise berechnet. Der höhere der beiden Werte
+-- ist ausschlaggebend. Zusätzlich muss für jede Partei die Summe der so ermittelten Werte
+-- über alle Bundesländer noch mit der Summe der nach Zweitstimmen ermittelten Sitzzahl
+-- verglichen werden, wiederum zählt der höhere Wert.
+
+
+CREATE materialized VIEW ZwischenErgebnis_Mindestsitze_2021 AS
     (
     SELECT w.bundesland, w.partei, GREATEST(w.wahlkreisSitze, ROUND((w.wahlkreisSitze + COALESCE(p.sitze, 0)) / 2.0 + 0.1)) AS MindestSitzzahl, p.sitze as Sitzkontingente, GREATEST(w.wahlkreisSitze - COALESCE(p.sitze, 0), 0) as drohenderUeberhang
     FROM Partei_gewonnene_Walhkreise_2021 w LEFT OUTER JOIN parteien_sitzverteilung_2021 p
     ON w."partei"= p.partei and w.bundesland = p.kurzbezeichnung
     );
 
-CREATE VIEW ZwischenErgebnis_Mindestsitze_2017 AS
+CREATE materialized VIEW ZwischenErgebnis_Mindestsitze_2017 AS
     (
     SELECT w.bundesland, w.partei, GREATEST(w.wahlkreisSitze, ROUND((w.wahlkreisSitze + COALESCE(p.sitze, 0)) / 2.0 + 0.1)) AS MindestSitzzahl, p.sitze as Sitzkontingente, GREATEST(w.wahlkreisSitze - COALESCE(p.sitze, 0), 0) as drohenderUeberhang
     FROM Partei_gewonnene_Walhkreise_2017 w LEFT OUTER JOIN parteien_sitzverteilung_2017 p
     ON w."partei"= p.partei and w.bundesland = p.kurzbezeichnung
     );
 
-CREATE VIEW Mindestsitze_2021 AS
+CREATE materialized VIEW Mindestsitze_2021 AS
     (
     SELECT m.partei, GREATEST(sum(m.MindestSitzzahl), sum(m.Sitzkontingente)) as mindSitze, sum(m.drohenderUeberhang) as drohenderUeberhang, sum(m.Sitzkontingente) as Sitzkontingente
     FROM ZwischenErgebnis_Mindestsitze_2021 m
     GROUP BY m.partei
     );
 
-CREATE VIEW Mindestsitze_2017 AS
+CREATE materialized VIEW Mindestsitze_2017 AS
     (
     SELECT m.partei, GREATEST(sum(m.MindestSitzzahl), sum(m.Sitzkontingente)) as mindSitze, sum(m.drohenderUeberhang) as drohenderUeberhang, sum(m.Sitzkontingente) as Sitzkontingente
     FROM ZwischenErgebnis_Mindestsitze_2017 m
     GROUP BY m.partei
     );
 
+-- Schritt 3: Wie viele Sitze müsste der Bundestag danach insgesamt haben, damit alle Parteien die für
+-- sie ermittelte Mindestsitzzahl erhalten? Wie viele Sitze entfallen damit auf jede Partei?
 
-CREATE VIEW Anfangsdivisor_Erhoehung_GesamtzahlSitze_2021 AS (
+-- Ausschlaggebend ist das Verhältnis der Zweitstimmen der Parteien. Jede Partei soll pro Sitz
+-- in etwa die gleiche Anzahl Stimmen benötigen. Letztlich verbleiben allerdings bis zu drei
+-- Direktmandate, die nicht auf diese Weise ausgeglichen werden (sogenannter verbleibender
+-- Überhang).
+
+-- Seiten 46 - 47: Ermittlung der Divisorspanne und des endgültigen Divisors für „6.1.4 Erhöhung der Gesamtzahl der Sitze für
+-- die Parteien“
+
+-- Seite 46 Anfangsdivisor
+CREATE materialized VIEW Anfangsdivisor_Erhoehung_GesamtzahlSitze_2021 AS (
     WITH OhneUeberhang AS (
         SELECT MIN(p.gesamtstimmen / (m.sitzkontingente - 0.5)) AS divisor
         FROM partei_gesamt_zweitstimmen_neu_2021 p, mindestsitze_2021 m
@@ -535,7 +581,7 @@ CREATE VIEW Anfangsdivisor_Erhoehung_GesamtzahlSitze_2021 AS (
                                );
 
 
-CREATE VIEW Anfangsdivisor_Erhoehung_GesamtzahlSitze_2017 AS (
+CREATE materialized VIEW Anfangsdivisor_Erhoehung_GesamtzahlSitze_2017 AS (
     WITH OhneUeberhang AS (
         SELECT MIN(p.gesamtstimmen / (m.sitzkontingente - 0.5)) AS divisor
         FROM partei_gesamt_zweitstimmen_neu_2017 p, mindestsitze_2017 m
@@ -573,7 +619,10 @@ CREATE VIEW Anfangsdivisor_Erhoehung_GesamtzahlSitze_2017 AS (
                                );
 
 
-CREATE VIEW parteien_sitzverteilung_final_2021 AS
+-- Seite 47: Erhöhung der Gesamtzahl der Sitze für
+-- die Parteien
+
+CREATE materialized VIEW parteien_sitzverteilung_final_2021 AS
     (
     SELECT p.partei, p.gesamtstimmen, round(p.gesamtstimmen / g.anfangsdivisor) as sitze
     FROM partei_gesamt_zweitstimmen_neu_2021 p, Anfangsdivisor_Erhoehung_GesamtzahlSitze_2021 g
@@ -588,7 +637,15 @@ CREATE VIEW parteien_sitzverteilung_final_2017 AS
     );
 
 
-CREATE VIEW Parteien_Landeslistenverteilung_final_2021 AS (
+-- Schritt 4: Wie viele Sitze einer Partei entfallen auf ihre Landeslisten?
+
+--  Ausschlaggebend ist die Anzahl der gültigen Zweitstimmen. Aber es dürfen nicht weniger
+-- Sitze auf die jeweilige Landesliste entfallen, als die Partei Mindestsitze gewonnen hat.
+
+-- Seiten 48 - 63: Ermittlung der Divisorspanne und des endgültigen Divisors für „6.1.5 Verteilung der Sitze auf die
+-- Landeslisten“
+
+CREATE materialized VIEW Parteien_Landeslistenverteilung_final_2021 AS (
 WITH RECURSIVE Sitzverteilung AS (
     -- Initial step: Calculate the initial divisor and allocate initial seats
 
@@ -614,7 +671,7 @@ WITH RECURSIVE Sitzverteilung AS (
          FROM zwischenergebnis_mindestsitze_2021 m
          WHERE m.bundesland = p.bundesland AND m.partei = p.partei) AS sitze,
         0 AS iteration,
-        -- Sum of initial seats for all parties in SH
+        -- Sum of initial seats for all parties
         (SELECT SUM(GREATEST(ROUND(p2.gesamtstimmen / (
             ((SELECT CAST(SUM(p3.gesamtstimmen) AS FLOAT)
              FROM partei_bundesland_zweitstimmen_neu_2021 p3
@@ -667,7 +724,7 @@ FROM Sitzverteilung s, (SELECT MAX(iteration) as iteration, partei from Sitzvert
 WHERE s.iteration = gesamt.iteration AND s.partei = gesamt.partei AND m.partei = s.partei AND m.bundesland = s.bundesland);
 
 
-CREATE VIEW Parteien_Landeslistenverteilung_final_2017 AS (
+CREATE materialized VIEW Parteien_Landeslistenverteilung_final_2017 AS (
 WITH RECURSIVE Sitzverteilung AS (
     -- Initial step: Calculate the initial divisor and allocate initial seats
 
@@ -693,7 +750,7 @@ WITH RECURSIVE Sitzverteilung AS (
          FROM zwischenergebnis_mindestsitze_2017 m
          WHERE m.bundesland = p.bundesland AND m.partei = p.partei) AS sitze,
         0 AS iteration,
-        -- Sum of initial seats for all parties in SH
+        -- Sum of initial seats for all parties
         (SELECT SUM(GREATEST(ROUND(p2.gesamtstimmen / (
             ((SELECT CAST(SUM(p3.gesamtstimmen) AS FLOAT)
              FROM partei_bundesland_zweitstimmen_neu_2017 p3
