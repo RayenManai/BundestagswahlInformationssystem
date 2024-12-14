@@ -18,19 +18,37 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
   if (type === "global") {
     return (
       <ResultsPanelContainer>
-        <h2>National Results</h2>
+        <h2>Sitzverteilung</h2>
+
+        <h2>Wahlbeteiligung</h2>
+
+        <h2>Erststimmen</h2>
+
+        <h2>Zweitstimmen</h2>
+
+        <h2>Mögliche Koalitionen</h2>
       </ResultsPanelContainer>
     );
   } else if (type === "bundesland") {
     return (
       <ResultsPanelContainer>
-        <h2>Bundesland Results</h2>
+        <h2>Wahlbeteiligung</h2>
+
+        <h2>Erststimmen</h2>
+
+        <h2>Zweitstimmen</h2>
       </ResultsPanelContainer>
     );
   } else if (type === "wahlkreis") {
     return (
       <ResultsPanelContainer>
-        <h2>Wahlkreis Results</h2>
+        <h2>Direktmandat</h2>
+
+        <h2>Wahlbeteiligung</h2>
+
+        <h2>Erststimmen</h2>
+
+        <h2>Zweitstimmen</h2>
       </ResultsPanelContainer>
     );
   }

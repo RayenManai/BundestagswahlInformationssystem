@@ -3,9 +3,10 @@ import styled from "styled-components";
 import FilterPanel from "./FilterPanel";
 import ResultsPanel from "./ResultsPanel";
 import {
-  BundeslandResults,
-  GlobalResults,
-  WahlkreisResults,
+  PartyResult,
+  PartyResultWK,
+  Results,
+  WahlkreisResult,
 } from "../models/results";
 
 const PageContainer = styled.div`
@@ -32,27 +33,29 @@ const ResultsPage: React.FC = () => {
       const result = await response.json();
 
       if (wahlkreis) {
-        const wahlkreisResults: WahlkreisResults = result;
+        const wahlkreisResults: WahlkreisResult = result;
         setData(
-          wahlkreisResults.wahlkreisResults.map((party) => ({
+          wahlkreisResults.partiesResults.map((party: PartyResultWK) => ({
             name: party.id,
-            votes: party.votes,
+            firstVotes: party.firstVotes,
+            secondVotes: party.secondVotes,
           }))
         );
         setDataType("wahlkreis");
       } else if (bundesland) {
-        const regionalResults: BundeslandResults = result;
+        const regionalResults: Results = result;
         setData(
-          regionalResults.bundeslandResults.map((party) => ({
+          regionalResults.partiesResults.map((party: PartyResult) => ({
             name: party.id,
-            votes: party.votes,
+            firstVotes: party.firstVotes,
+            secondVotes: party.secondVotes,
           }))
         );
         setDataType("bundesland");
       } else {
-        const nationalResults: GlobalResults = result;
+        const nationalResults: Results = result;
         setData(
-          nationalResults.parties.map((party) => ({
+          nationalResults.partiesResults.map((party: PartyResult) => ({
             name: party.id,
             seats: party.seats,
             firstVotes: party.firstVotes,

@@ -26,22 +26,22 @@ const HalfDoughnutChart: React.FC<HalfDoughnutChartProps> = ({
           "#FFCD33",
         ],
         hoverOffset: 4,
-        borderWidth: 0, // No border for clean chart
+        borderWidth: 0,
       },
     ],
   };
 
   const chartOptions = {
-    circumference: 180, // 180 degrees (half-circle)
-    rotation: -90, // Start from the top (12 o'clock position)
-    cutout: "60%", // Creates the hole in the center (adjust for size)
+    circumference: 180,
+    rotation: -90,
+    cutout: "60%",
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       tooltip: {
         callbacks: {
           label: (tooltipItem: any) => {
-            const percent = tooltipItem.raw.toFixed(2); // Showing percentage
+            const percent = tooltipItem.raw.toFixed(2);
             return `${tooltipItem.label}: ${percent}%`;
           },
         },

@@ -8,7 +8,7 @@ const PageContainer = styled.div`
 `;
 
 const Sidebar = styled.div`
-  width: 350px;
+  width: 25%;
   background-color: rgba(202, 221, 255, 0.8);
   padding: 1rem;
   border-right: 1px solid #ddd;

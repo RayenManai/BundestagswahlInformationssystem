@@ -4,8 +4,8 @@ import { BUNDESLAENDER } from "../models/bundeslaender";
 import { WAHLKREISE } from "../models/wahlkreise";
 
 const FilterPanelContainer = styled.div`
-  width: 30%;
-  padding: 2rem;
+  width: 25%;
+  padding: 1rem;
   background-color: rgba(202, 221, 255, 0.8);
   border-right: 1px solid #ddd;
   display: flex;
