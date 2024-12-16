@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { Abgeordnete, Abgeordneter } from "../models/results";
 import {
   MRT_Table,
+  MRT_TablePagination,
   useMaterialReactTable,
   type MRT_ColumnDef,
 } from "material-react-table";
@@ -17,8 +18,8 @@ const PageContainer = styled.div`
 
 const FilterPanelContainer = styled.div`
   padding: 1rem;
-  background-color: rgba(202, 221, 255, 0.8);
-  border-right: 1px solid #ddd;
+  width: 30%;
+  margin: 0 auto 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -46,6 +47,14 @@ const Select = styled.select`
 const Title = styled.h1`
   font-size: 2rem;
   margin-bottom: 1rem;
+`;
+
+const TableContainer = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 0 auto;
+  width: 80%;
 `;
 
 const AbgeordneteListe: React.FC = () => {
@@ -112,7 +121,9 @@ const AbgeordneteListe: React.FC = () => {
 
     enableColumnFilters: true,
 
-    enablePagination: false,
+    enablePagination: true,
+
+    paginationDisplayMode: "pages",
 
     enableSorting: false,
 
@@ -134,7 +145,10 @@ const AbgeordneteListe: React.FC = () => {
           </Select>
         </Label>
       </FilterPanelContainer>
-      <MRT_Table table={table} />
+      <TableContainer>
+        <MRT_Table table={table} />
+        <MRT_TablePagination table={table} />
+      </TableContainer>
     </PageContainer>
   );
 };

@@ -41,7 +41,6 @@ const TableContainer = styled.div`
   th,
   td {
     padding: 10px;
-    text-align: left;
     border-bottom: 1px solid #ddd;
   }
 
@@ -189,8 +188,10 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
                       (oldResult) => oldResult.id === party
                     );
                     return oldResult
-                      ? result.seats - oldResult.seats
-                      : result.seats;
+                      ? result.seats - oldResult.seats > 0
+                        ? "+ " + (result.seats - oldResult.seats)
+                        : "- " + (oldResult.seats - result.seats)
+                      : "+ " + result.seats;
                   });
                   return (
                     <tr key={result.id}>
