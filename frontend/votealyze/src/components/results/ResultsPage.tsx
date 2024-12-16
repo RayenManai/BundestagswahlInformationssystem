@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import FilterPanel from "./FilterPanel";
 import ResultsPanel from "./ResultsPanel";
-import { Results, WahlkreisResult } from "../models/results";
+import { Results, WahlkreisResult } from "../../models/results";
 
 const PageContainer = styled.div`
   display: flex;

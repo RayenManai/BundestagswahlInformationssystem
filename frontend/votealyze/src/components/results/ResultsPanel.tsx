@@ -6,11 +6,11 @@ import {
   PartyResult,
   Results,
   WahlkreisResult,
-} from "../models/results";
-import HalfDoughnutChart from "./charts/HalfDoughnutChart";
-import { PARTEI_FARBE } from "../models/parteien_politische_farben";
-import HorizontalStackedBarChart from "./charts/HorizontalStackedBarChart";
-import VerticalBarChart from "./charts/VerticalBarChart";
+} from "../../models/results";
+import HalfDoughnutChart from "../charts/HalfDoughnutChart";
+import { PARTEI_FARBE } from "../../models/parteien_politische_farben";
+import HorizontalStackedBarChart from "../charts/HorizontalStackedBarChart";
+import VerticalBarChart from "../charts/VerticalBarChart";
 
 const ResultsPanelContainer = styled.div`
   flex: 1;

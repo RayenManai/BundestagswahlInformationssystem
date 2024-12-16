@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { BUNDESLAENDER } from "../models/bundeslaender";
-import { WAHLKREISE } from "../models/wahlkreise";
+import { BUNDESLAENDER } from "../../models/bundeslaender";
+import { WAHLKREISE } from "../../models/wahlkreise";
 
 const FilterPanelContainer = styled.div`
   width: 25%;

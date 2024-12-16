@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import { ReactComponent as GermanFlag } from "../assets/de.svg";
-import { ReactComponent as BritishFlag } from "../assets/gb.svg";
+import { ReactComponent as GermanFlag } from "../../assets/de.svg";
+import { ReactComponent as BritishFlag } from "../../assets/gb.svg";
 import Logo from "./Logo";
 
 const HeaderContainer = styled.header`

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import ResultsPage from "./components/ResultsPage";
-import StatisticsPage from "./components/StatisticsPage";
-import Abgeordnete from "./components/Abgeordnete";
+import Footer from "./components/footer/Footer";
+import ResultsPage from "./components/results/ResultsPage";
+import StatisticsPage from "./components/statistics/StatisticsPage";
+import Abgeordnete from "./components/abgeordnete/Abgeordnete";
+import Header from "./components/header/Header";
 
 const PageContainer = styled.div`
   display: flex;

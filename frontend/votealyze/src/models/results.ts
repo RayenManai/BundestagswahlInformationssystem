@@ -47,3 +47,19 @@ export const COALITIONS = [
   { name: "Rot-Rot-Grün", parties: ["SPD", "DIE LINKE", "GRÜNE"] },
   { name: "Schwarz-Gelb", parties: ["CDU", "CSU", "FDP"] },
 ];
+
+export interface KnappsteMandate {
+  name: string;
+  partei: string;
+  wahlkreis: string;
+  gewonnene_stimmen: number;
+  sprung: number;
+  vorg_name: string;
+  vorg_partei: string;
+  vorg_anzahlstimmen: number;
+}
+
+export interface Statistik1 {
+  knappsteSieger: KnappsteMandate[];
+  knappsteVerlorene: KnappsteMandate[];
+}

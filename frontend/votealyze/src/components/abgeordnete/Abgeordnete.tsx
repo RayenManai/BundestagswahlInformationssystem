@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
-import { Abgeordnete, Abgeordneter } from "../models/results";
+import { Abgeordnete, Abgeordneter } from "../../models/results";
 import {
   MRT_Table,
   MRT_TablePagination,
@@ -99,13 +99,13 @@ const AbgeordneteListe: React.FC = () => {
         accessorKey: "direktMandat",
         header: "Direktmandat",
         filterVariant: "checkbox",
-        Cell: ({ cell }) => (cell.getValue() == "true" ? "Ja" : "Nein"),
+        Cell: ({ cell }) => (cell.getValue() === "true" ? "Ja" : "Nein"),
       },
       {
         accessorKey: "UberhangMandat",
         header: "Überhangmandat",
         filterVariant: "checkbox",
-        Cell: ({ cell }) => (cell.getValue() == "true" ? "Ja" : "Nein"),
+        Cell: ({ cell }) => (cell.getValue() === "true" ? "Ja" : "Nein"),
       },
     ],
     [members]

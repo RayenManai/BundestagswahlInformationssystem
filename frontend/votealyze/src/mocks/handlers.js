@@ -156,4 +156,66 @@ export const handlers = [
       console.error("Error in mock handler:", error.message);
     }
   }),
+
+  http.get("/api/q6", ({ request }) => {
+    const url = new URL(request.url);
+
+    const year = url.searchParams.get("year");
+    try {
+      // Mock data based on parameters
+      if (!year) {
+        throw new Error("Year parameter is required");
+      }
+
+      // Mock data for wahlkreis filter
+      return HttpResponse.json({
+        knappsteSieger: [
+          {
+            name: "Lars Rohwer",
+            partei: "CDU",
+            wahlkreis: "160",
+            gewonnene_stimmen: 35014,
+            sprung: 35,
+            vorg_name: "Harlaß Andreas",
+            vorg_partei: "AfD",
+            vorg_anzahlstimmen: 34979,
+          },
+          {
+            name: "Thomas Hitschler",
+            partei: "SPD",
+            wahlkreis: "211",
+            gewonnene_stimmen: 47901,
+            sprung: 41,
+            vorg_name: "Dr. Gebhart Thomas",
+            vorg_partei: "CDU",
+            vorg_anzahlstimmen: 47860,
+          },
+        ],
+        knappsteVerlorene: [
+          {
+            name: "Astrid Damerow",
+            partei: "CDU",
+            wahlkreis: "2",
+            gewonnene_stimmen: 43745,
+            sprung: 34335,
+            vorg_name: "Nitsch Sybilla Lena",
+            vorg_partei: "SSW",
+            vorg_anzahlstimmen: 9410,
+          },
+          {
+            name: "Lars Rohwer",
+            partei: "CDU",
+            wahlkreis: "160",
+            gewonnene_stimmen: 35014,
+            sprung: 14303,
+            vorg_name: "Dr. Müller Silke",
+            vorg_partei: "FDP",
+            vorg_anzahlstimmen: 20711,
+          },
+        ],
+      });
+    } catch (error) {
+      console.error("Error in mock handler:", error.message);
+    }
+  }),
 ];

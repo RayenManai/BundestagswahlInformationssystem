@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import { ReactComponent as GitHubIcon } from "../assets/github-mark.svg";
-import Logo from "./Logo";
+import { ReactComponent as GitHubIcon } from "../../assets/github-mark.svg";
+import Logo from "../header/Logo";
 
 const FooterContainer = styled.footer`
   background-color: rgba(30, 113, 255, 0.1);
