@@ -8,6 +8,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { PARTEI_FARBE } from "../../models/parteien_politische_farben";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -27,9 +28,16 @@ const VerticalBarChart: React.FC<VerticalBarChartProps> = ({
     datasets: years.map((year) => ({
       label: `${year}`,
       data: parties.map((party) => data[party]?.[year] || 0),
-      backgroundColor: year === 2021 ? "#2196F3" : "#FF5733", // Different colors for each year
+      backgroundColor: parties.map((party: string) => {
+        const partyColor = PARTEI_FARBE.find((p) => p.id === party);
+        return partyColor
+          ? year === 2021
+            ? partyColor.color
+            : partyColor.color + "B3" //Hexadecimal color code for transparency 70%
+          : "#000000";
+      }), // Default
       borderWidth: 1,
-      barThickness: 60,
+      barThickness: 40,
     })),
   };
 
@@ -59,7 +67,7 @@ const VerticalBarChart: React.FC<VerticalBarChartProps> = ({
   };
 
   return (
-    <div style={{ width: "100%", height: "400px" }}>
+    <div style={{ width: "60%", height: "400px", margin: "0 auto" }}>
       <Bar data={chartData} options={chartOptions} />
     </div>
   );

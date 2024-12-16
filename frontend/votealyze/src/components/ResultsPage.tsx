@@ -2,17 +2,13 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import FilterPanel from "./FilterPanel";
 import ResultsPanel from "./ResultsPanel";
-import {
-  PartyResult,
-  PartyResultWK,
-  Results,
-  WahlkreisResult,
-} from "../models/results";
+import { Results, WahlkreisResult } from "../models/results";
 
 const PageContainer = styled.div`
   display: flex;
   flex: 1;
   flex-direction: row;
+  align-items: flex-start;
 `;
 
 const ResultsPage: React.FC = () => {

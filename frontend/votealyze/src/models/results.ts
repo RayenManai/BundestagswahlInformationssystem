@@ -7,18 +7,6 @@ export interface PartyResult {
   secondVotes: number;
 }
 
-export interface Abgeordneter {
-  name: string;
-  party: string;
-  bundesland: string;
-  direktMandat: Boolean;
-  UberhangMandat: Boolean;
-}
-
-export interface Abgeordnete {
-  abgeordnete: Abgeordneter[];
-}
-
 export interface Results {
   partiesResults: PartyResult[];
   partiesOldResults: PartyResult[];
@@ -40,6 +28,17 @@ export interface PartyResultWK {
   secondVotes: number;
 }
 
+export interface Abgeordneter {
+  name: string;
+  party: string;
+  bundesland: string;
+  direktMandat: Boolean;
+  UberhangMandat: Boolean;
+}
+
+export interface Abgeordnete {
+  abgeordnete: Abgeordneter[];
+}
 export const COALITIONS = [
   { name: "Ampel-Koalition", parties: ["SPD", "GRÜNE", "FDP"] },
   { name: "Jamaika-Koalition", parties: ["CDU", "GRÜNE", "FDP"] },

@@ -12,6 +12,10 @@ const FilterPanelContainer = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 `;
 
 const Title = styled.h2`
