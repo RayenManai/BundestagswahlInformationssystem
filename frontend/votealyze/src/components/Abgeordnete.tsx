@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
-import { Abgeordneter } from "../models/results";
+import { Abgeordnete, Abgeordneter } from "../models/results";
 import {
   MRT_Table,
   useMaterialReactTable,
@@ -48,7 +48,7 @@ const Title = styled.h1`
   margin-bottom: 1rem;
 `;
 
-const Abgeordnete: React.FC = () => {
+const AbgeordneteListe: React.FC = () => {
   const [year, setYear] = useState<number>(2021);
   const [members, setMembers] = useState<Abgeordneter[]>([]);
 
@@ -56,8 +56,8 @@ const Abgeordnete: React.FC = () => {
     const fetchMembers = async () => {
       try {
         const response = await fetch(`/api/delegates/?year=${year}`);
-        const data: Abgeordneter[] = await response.json();
-        setMembers(data);
+        const data: Abgeordnete = await response.json();
+        setMembers(data.abgeordnete);
       } catch (error) {
         console.error("Error fetching delegates:", error);
       }
@@ -90,13 +90,13 @@ const Abgeordnete: React.FC = () => {
         accessorKey: "direktMandat",
         header: "Direktmandat",
         filterVariant: "checkbox",
-        Cell: ({ cell }) => (cell.getValue() ? "Ja" : "Nein"),
+        Cell: ({ cell }) => (cell.getValue() == "true" ? "Ja" : "Nein"),
       },
       {
         accessorKey: "UberhangMandat",
         header: "Überhangmandat",
         filterVariant: "checkbox",
-        Cell: ({ cell }) => (cell.getValue() ? "Ja" : "Nein"),
+        Cell: ({ cell }) => (cell.getValue() == "true" ? "Ja" : "Nein"),
       },
     ],
     [members]
@@ -139,4 +139,4 @@ const Abgeordnete: React.FC = () => {
   );
 };
 
-export default Abgeordnete;
+export default AbgeordneteListe;

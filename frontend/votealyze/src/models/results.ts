@@ -39,3 +39,12 @@ export interface PartyResultWK {
   firstVotes: number;
   secondVotes: number;
 }
+
+export const COALITIONS = [
+  { name: "Ampel-Koalition", parties: ["SPD", "GRÜNE", "FDP"] },
+  { name: "Jamaika-Koalition", parties: ["CDU", "GRÜNE", "FDP"] },
+  { name: "Große Koalition", parties: ["CDU", "CSU", "SPD"] },
+  { name: "Rot-Grün", parties: ["SPD", "GRÜNE"] },
+  { name: "Rot-Rot-Grün", parties: ["SPD", "DIE LINKE", "GRÜNE"] },
+  { name: "Schwarz-Gelb", parties: ["CDU", "CSU", "FDP"] },
+];

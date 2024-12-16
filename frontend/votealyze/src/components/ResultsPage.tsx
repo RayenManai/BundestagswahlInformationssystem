@@ -34,34 +34,15 @@ const ResultsPage: React.FC = () => {
 
       if (wahlkreis) {
         const wahlkreisResults: WahlkreisResult = result;
-        setData(
-          wahlkreisResults.partiesResults.map((party: PartyResultWK) => ({
-            name: party.id,
-            firstVotes: party.firstVotes,
-            secondVotes: party.secondVotes,
-          }))
-        );
+        setData(wahlkreisResults);
         setDataType("wahlkreis");
       } else if (bundesland) {
         const regionalResults: Results = result;
-        setData(
-          regionalResults.partiesResults.map((party: PartyResult) => ({
-            name: party.id,
-            firstVotes: party.firstVotes,
-            secondVotes: party.secondVotes,
-          }))
-        );
+        setData(regionalResults);
         setDataType("bundesland");
       } else {
         const nationalResults: Results = result;
-        setData(
-          nationalResults.partiesResults.map((party: PartyResult) => ({
-            name: party.id,
-            seats: party.seats,
-            firstVotes: party.firstVotes,
-            secondVotes: party.secondVotes,
-          }))
-        );
+        setData(nationalResults);
         setDataType("global");
       }
     } catch (error) {
