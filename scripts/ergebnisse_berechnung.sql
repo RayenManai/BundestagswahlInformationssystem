@@ -47,9 +47,9 @@ WITH RECURSIVE Sitzverteilung AS (
         ) , (SELECT (CASE
             -- Calculate the new divisor based on the adjusted seat count from the previous iteration
             WHEN s1.total_sitze < 598 THEN
-                MAX(b2.bevoelkerung / (ROUND(s1.Sitzkontingente) + 0.5)) - 0.0001
+                MAX(b2.bevoelkerung / (s1.Sitzkontingente + 0.5)) - 0.0001
             ELSE
-                MIN(b2.bevoelkerung / (ROUND(s1.Sitzkontingente) - 0.5)) + 0.0001
+                MIN(b2.bevoelkerung / (s1.Sitzkontingente - 0.5)) + 0.0001
         END) AS divisor FROM sitze s1, "BundeslandStruktur" b2
                         WHERE b2.kurzbezeichnung = s1.kurzbezeichnung and b2.jahr = 2021
                         GROUP BY s1.total_sitze) divisor_table
@@ -96,9 +96,9 @@ WITH RECURSIVE Sitzverteilung AS (
         ) , (SELECT (CASE
             -- Calculate the new divisor based on the adjusted seat count from the previous iteration
             WHEN s1.total_sitze < 598 THEN
-                MAX(b2.bevoelkerung / (ROUND(s1.Sitzkontingente) + 0.5)) - 0.0001
+                MAX(b2.bevoelkerung / (s1.Sitzkontingente + 0.5)) - 0.0001
             ELSE
-                MIN(b2.bevoelkerung / (ROUND(s1.Sitzkontingente) - 0.5)) + 0.0001
+                MIN(b2.bevoelkerung / (s1.Sitzkontingente - 0.5)) + 0.0001
         END) AS divisor FROM sitze s1, "BundeslandStruktur" b2
                         WHERE b2.kurzbezeichnung = s1.kurzbezeichnung and b2.jahr = 2017
                         GROUP BY s1.total_sitze) divisor_table
@@ -342,9 +342,9 @@ WITH RECURSIVE Sitzverteilung AS (
         SELECT s3.iteration as iteration, ober2.kurzbezeichnung as kurzbezeichnung, (CASE
             -- Calculate the new divisor based on the adjusted seat count from the previous iteration
             WHEN s3.total_sitze < ober2.sitze THEN
-                MAX(p2.gesamtstimmen / (ROUND(s3.sitze) + 0.5)) - 0.0001
+                MAX(p2.gesamtstimmen / (s3.sitze + 0.5)) - 0.0001
             ELSE
-                MIN(p2.gesamtstimmen / (ROUND(s3.sitze) - 0.5)) + 0.0001
+                MIN(p2.gesamtstimmen / (s3.sitze - 0.5)) + 0.0001
         END ) as divisor
          FROM oberverteilung_2021 ober2, verteilung s3, partei_bundesland_zweitstimmen_neu_2021 p2
          WHERE ober2.kurzbezeichnung = s3.kurzbezeichnung and p2."parteiId" = s3."parteiId" and p2.bundesland = ober2.kurzbezeichnung
@@ -417,9 +417,9 @@ WITH RECURSIVE Sitzverteilung AS (
         SELECT s3.iteration as iteration, ober2.kurzbezeichnung as kurzbezeichnung, (CASE
             -- Calculate the new divisor based on the adjusted seat count from the previous iteration
             WHEN s3.total_sitze < ober2.sitze THEN
-                MAX(p2.gesamtstimmen / (ROUND(s3.sitze) + 0.5)) - 0.0001
+                MAX(p2.gesamtstimmen / (s3.sitze + 0.5)) - 0.0001
             ELSE
-                MIN(p2.gesamtstimmen / (ROUND(s3.sitze) - 0.5)) + 0.0001
+                MIN(p2.gesamtstimmen / (s3.sitze - 0.5)) + 0.0001
         END ) as divisor
          FROM oberverteilung_2017 ober2, verteilung s3, partei_bundesland_zweitstimmen_neu_2017 p2
          WHERE ober2.kurzbezeichnung = s3.kurzbezeichnung and p2."parteiId" = s3."parteiId" and p2.bundesland = ober2.kurzbezeichnung
@@ -440,17 +440,18 @@ where s.kurzbezeichnung = gesamt.kurzbezeichnung AND s.iteration = gesamt.iterat
 CREATE materialized VIEW Partei_gewonnene_Walhkreise_2021 AS (
     SELECT b.kurzbezeichnung as bundesland, p."parteiId" as parteiId, count(w."wahlkreisId") as wahlkreisSitze
     FROM (Parteien_Nach_Huerde_2021 p CROSS JOIN "Bundesland" b)  LEFT OUTER JOIN
-        (("Gewaehlte_direkt_kandidaten" direkt JOIN "DirektKandidatur" d ON direkt."kandidaturId" = d."kandidaturId")
-         JOIN "Wahlkreis" w ON b.kurzbezeichnung = w.bundesland AND w."wahlkreisId" = d."wahlkreisId"
-        AND w.bundesland = b.kurzbezeichnung) ON p."parteiId" = direkt."parteiId"
+        (("Gewaehlte_direkt_kandidaten" direkt JOIN "DirektKandidatur" d ON direkt."kandidaturId" = d."kandidaturId"
+            AND d.jahr=2021)
+         JOIN "Wahlkreis" w ON  w."wahlkreisId" = d."wahlkreisId") ON p."parteiId" = direkt."parteiId" AND b.kurzbezeichnung = w.bundesland
      GROUP BY b.kurzbezeichnung, p."parteiId"
     );
 
 CREATE materialized VIEW Partei_gewonnene_Walhkreise_2017 AS (
-    SELECT b.kurzbezeichnung as bundesland, p."parteiId" as parteiId, count(direkt.wahlkreisId) as wahlkreisSitze
-    FROM ((Parteien_Nach_Huerde_2017 p CROSS JOIN "Bundesland" b)  LEFT OUTER JOIN
-        (Gewahlte_direkt_kandidaten_2017 direkt JOIN "Wahlkreis" w ON direkt.wahlkreisId = w."wahlkreisId")
-        ON p."parteiId" = direkt."parteiId" and b.kurzbezeichnung = w.bundesland)
+    SELECT b.kurzbezeichnung as bundesland, p."parteiId" as parteiId, count(w."wahlkreisId") as wahlkreisSitze
+    FROM (Parteien_Nach_Huerde_2017 p CROSS JOIN "Bundesland" b)  LEFT OUTER JOIN
+        (("Gewaehlte_direkt_kandidaten" direkt JOIN "DirektKandidatur" d ON direkt."kandidaturId" = d."kandidaturId"
+            AND d.jahr=2017)
+         JOIN "Wahlkreis" w ON  w."wahlkreisId" = d."wahlkreisId") ON p."parteiId" = direkt."parteiId" AND b.kurzbezeichnung = w.bundesland
      GROUP BY b.kurzbezeichnung, p."parteiId"
     );
 
@@ -474,7 +475,7 @@ CREATE materialized VIEW ZwischenErgebnis_Mindestsitze_2021 AS
 
 CREATE materialized VIEW ZwischenErgebnis_Mindestsitze_2017 AS
     (
-    SELECT w.bundesland, w.parteiId, GREATEST(w.wahlkreisSitze, ROUND((w.wahlkreisSitze + COALESCE(p.sitze, 0)) / 2.0 + 0.1)) AS MindestSitzzahl, p.sitze as Sitzkontingente, GREATEST(w.wahlkreisSitze - COALESCE(p.sitze, 0), 0) as drohenderUeberhang
+    SELECT w.bundesland, w.parteiId, GREATEST(w.wahlkreisSitze, COALESCE(p.sitze, 0)) AS MindestSitzzahl, COALESCE(p.sitze, 0) as Sitzkontingente, GREATEST(w.wahlkreisSitze - COALESCE(p.sitze, 0), 0) as drohenderUeberhang
     FROM Partei_gewonnene_Walhkreise_2017 w LEFT OUTER JOIN parteien_sitzverteilung_2017 p
     ON w.parteiId= p."parteiId" and w.bundesland = p.kurzbezeichnung
     );
@@ -543,42 +544,13 @@ CREATE materialized VIEW Anfangsdivisor_Erhoehung_GesamtzahlSitze_2021 AS (
                                );
 
 
-CREATE materialized VIEW Anfangsdivisor_Erhoehung_GesamtzahlSitze_2017 AS (
-    WITH OhneUeberhang AS (
-        SELECT MIN(p.gesamtstimmen / (m.sitzkontingente - 0.5)) AS divisor
-        FROM partei_gesamt_zweitstimmen_neu_2017 p, mindestsitze_2017 m
-        WHERE p."parteiId" = m.parteiId
-    ),
-    MitUebergang AS (
-        (SELECT (p.gesamtstimmen / (m.mindSitze - 0.5)) as divisor
-        FROM partei_gesamt_zweitstimmen_neu_2017 p, Mindestsitze_2017 m
-        WHERE p."parteiId" = m.parteiId AND m.drohenderUeberhang > 0)
-        UNION
-      (SELECT (p.gesamtstimmen / (m.mindSitze - 1.5)) as divisor
-        FROM partei_gesamt_zweitstimmen_neu_2017 p, Mindestsitze_2017 m
-        WHERE p."parteiId" = m.parteiId AND m.drohenderUeberhang > 1)
-    UNION
-        (SELECT (p.gesamtstimmen / (m.mindSitze - 2.5)) as divisor
-    FROM partei_gesamt_zweitstimmen_neu_2017 p, Mindestsitze_2017 m
-    WHERE p."parteiId" = m.parteiId AND m.drohenderUeberhang > 2)
-    UNION
-        (SELECT (p.gesamtstimmen / (m.mindSitze - 3.5)) as divisor
-    FROM partei_gesamt_zweitstimmen_neu_2017 p, Mindestsitze_2017 m
-    WHERE p."parteiId" = m.parteiId AND m.drohenderUeberhang > 3)
-        ) ,
-    Viertkleinster AS (
-        SELECT m1.divisor
-        FROM MitUebergang m1
-        WHERE (SELECT count(*)
-               FROM MitUebergang m2
-               WHERE m2.divisor < m1.divisor) = 3
-    )
-        SELECT MIN(divisor) as anfangsdivisor
-        FROM  (SELECT divisor FROM OhneUeberhang
-                             UNION
-              SELECT divisor FROM Viertkleinster) v
-
-                               );
+CREATE materialized VIEW Anfangsdivisor_Erhoehung_GesamtzahlSitze_2017 AS
+(
+SELECT MIN(p.gesamtstimmen / (m.mindSitze - 0.5)) AS anfangsdivisor
+FROM partei_gesamt_zweitstimmen_neu_2017 p,
+     mindestsitze_2017 m
+WHERE p."parteiId" = m.parteiId
+    );
 
 
 -- Seite 47: Erhöhung der Gesamtzahl der Sitze für
@@ -589,8 +561,6 @@ CREATE materialized VIEW parteien_sitzverteilung_final_2021 AS
     SELECT p."parteiId", p.gesamtstimmen, round(p.gesamtstimmen / g.anfangsdivisor) as sitze
     FROM partei_gesamt_zweitstimmen_neu_2021 p, Anfangsdivisor_Erhoehung_GesamtzahlSitze_2021 g
     );
-
-
 
 CREATE materialized VIEW parteien_sitzverteilung_final_2017 AS
     (
@@ -664,14 +634,14 @@ WITH RECURSIVE Sitzverteilung AS (
          WHERE p2."parteiId" = p."parteiId" AND m.bundesland = p2.bundesland AND m.parteiId = p."parteiId"
          ) AS total_sitze
     FROM ((s2 s JOIN partei_bundesland_zweitstimmen_neu_2021 p ON p."parteiId" = p."parteiId"
-    ) JOIN Parteien_Sitzverteilung_final_2021 psf ON p."parteiId"= psf."parteiId" AND p."parteiId" = p."parteiId") JOIN LATERAL
+    ) JOIN Parteien_Sitzverteilung_final_2021 psf ON p."parteiId"= psf."parteiId") JOIN LATERAL
         (
         SELECT s3.iteration as iteration, p2."parteiId" as parteiId, (CASE
             -- Calculate the new divisor based on the adjusted seat count from the previous iteration
             WHEN s3.total_sitze < psf.sitze THEN
-                MAX(p2.gesamtstimmen / (ROUND(s3.sitze) + 0.5)) - 0.0001
+                MAX(p2.gesamtstimmen / (s3.sitze + 0.5)) - 0.0001
             ELSE
-                MIN(p2.gesamtstimmen / (ROUND(s3.sitze) - 0.5)) + 0.0001
+                MIN(p2.gesamtstimmen / (s3.sitze - 0.5)) + 0.0001
         END ) as divisor
          FROM "partei_bundesland_zweitstimmen_neu_2021" p2, s2 s3, zwischenergebnis_mindestsitze_2021 z
          WHERE p2.bundesland = s3.bundesland and p2.bundesland = z.bundesland and (s3.sitze <> 0)
@@ -708,8 +678,8 @@ WITH RECURSIVE Sitzverteilung AS (
             ((SELECT CAST(SUM(p2.gesamtstimmen) AS FLOAT)
              FROM partei_bundesland_zweitstimmen_neu_2017 p2
              WHERE p2."parteiId" = p."parteiId") / psf.sitze) + 0.0001
-        )), m.mindestsitzzahl)
-         FROM zwischenergebnis_mindestsitze_2017 m
+        )), m.wahlkreisSitze)
+         FROM partei_gewonnene_walhkreise_2017 m
          WHERE m.bundesland = p.bundesland AND m.parteiId = p."parteiId") AS sitze,
         0 AS iteration,
         -- Sum of initial seats for all parties
@@ -717,8 +687,8 @@ WITH RECURSIVE Sitzverteilung AS (
             ((SELECT CAST(SUM(p3.gesamtstimmen) AS FLOAT)
              FROM partei_bundesland_zweitstimmen_neu_2017 p3
              WHERE p3."parteiId" = p."parteiId") / psf.sitze
-        ) + 0.0001)), m.mindestsitzzahl))
-         FROM partei_bundesland_zweitstimmen_neu_2017 p2, zwischenergebnis_mindestsitze_2017 m
+        ) + 0.0001)), m.wahlkreisSitze))
+         FROM partei_bundesland_zweitstimmen_neu_2017 p2, partei_gewonnene_walhkreise_2017 m
          WHERE p2."parteiId" = p."parteiId" and m.parteiId = p."parteiId" and m.bundesland = p2.bundesland)
          AS total_sitze
     FROM partei_bundesland_zweitstimmen_neu_2017 p, parteien_sitzverteilung_final_2017 psf
@@ -734,12 +704,12 @@ WITH RECURSIVE Sitzverteilung AS (
         p.gesamtstimmen,
         divisor_table.divisor as divisor,
         (SELECT ROUND(p.gesamtstimmen / divisor_table.divisor)) AS gerundetesitze,
-        (SELECT GREATEST(ROUND(p.gesamtstimmen / divisor_table.divisor), m.mindestsitzzahl)
-         FROM zwischenergebnis_mindestsitze_2017 m
+        (SELECT GREATEST(ROUND(p.gesamtstimmen / divisor_table.divisor), m.wahlkreisSitze)
+         FROM partei_gewonnene_walhkreise_2017 m
          WHERE m.bundesland = p.bundesland AND m.parteiId = p."parteiId") AS sitze,
         divisor_table.iteration + 1,
-        (SELECT SUM(GREATEST(ROUND(p2.gesamtstimmen / divisor_table.divisor), m.mindestsitzzahl))
-         FROM "partei_bundesland_zweitstimmen_neu_2017" p2, zwischenergebnis_mindestsitze_2017 m
+        (SELECT SUM(GREATEST(ROUND(p2.gesamtstimmen / divisor_table.divisor), m.wahlkreisSitze))
+         FROM "partei_bundesland_zweitstimmen_neu_2017" p2, partei_gewonnene_walhkreise_2017 m
          WHERE p2."parteiId" = p."parteiId" AND m.bundesland = p2.bundesland AND m.parteiId = p."parteiId"
          ) AS total_sitze
     FROM ((s2 s JOIN partei_bundesland_zweitstimmen_neu_2017 p ON p."parteiId" = p."parteiId"
@@ -748,13 +718,13 @@ WITH RECURSIVE Sitzverteilung AS (
         SELECT s3.iteration as iteration, p2."parteiId" as parteiId, (CASE
             -- Calculate the new divisor based on the adjusted seat count from the previous iteration
             WHEN s3.total_sitze < psf.sitze THEN
-                MAX(p2.gesamtstimmen / (ROUND(s3.sitze) + 0.5)) - 0.0001
+                MAX(p2.gesamtstimmen / (s3.sitze + 0.5)) - 0.0001
             ELSE
-                MIN(p2.gesamtstimmen / (ROUND(s3.sitze) - 0.5)) + 0.0001
+                MIN(p2.gesamtstimmen / (s3.sitze - 0.5)) + 0.0001
         END ) as divisor
-         FROM "partei_bundesland_zweitstimmen_neu_2017" p2, s2 s3, zwischenergebnis_mindestsitze_2017 z
+         FROM "partei_bundesland_zweitstimmen_neu_2017" p2, s2 s3, partei_gewonnene_walhkreise_2017 z
          WHERE p2.bundesland = s3.bundesland and p2.bundesland = z.bundesland and (s3.sitze <> 0)
-           and z.mindestsitzzahl <= s3.gerundetesitze and z.parteiId = p2."parteiId" and z.parteiId = s3."parteiId" and p."parteiId" = p2."parteiId"
+           and z.wahlkreisSitze <= s3.gerundetesitze and z.parteiId = p2."parteiId" and z.parteiId = s3."parteiId" and p."parteiId" = p2."parteiId"
          GROUP BY s3.iteration, p2."parteiId", s3.total_sitze, psf.sitze
          ) divisor_table ON
     s.total_sitze <> psf.sitze AND s."parteiId" = divisor_table.parteiId

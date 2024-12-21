@@ -7,6 +7,7 @@ import os
 if __name__ == '__main__':
     create_partei()
     create_bundesland()
+    create_bundesland_struktur()
     create_wahlkreis()
     create_zweitstimmeErgebnisse_2017()
     create_zweitstimmeErgebnisse_2021()
