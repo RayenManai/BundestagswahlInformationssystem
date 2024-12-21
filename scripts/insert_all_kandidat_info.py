@@ -28,9 +28,9 @@ def insert_candidates():
         for _, row in data.iterrows():
             if int(row['id']) not in existing_kandidats:
                 entry_kandidat = Kandidat(
-                    kandidatId=row['id'],
-                    titel=row['Titel'],
-                    geburtsjahr=row['Geburtsjahr'],
+                    kandidatId= int(row['id']),
+                    titel=row['Titel'] if pd.notna(row['Titel']) else None,
+                    geburtsjahr=int(row['Geburtsjahr']),
                     name=row['Nachname'],
                     vorname=row['Vornamen'],
                     parteiId=get_partei_from_kurzbezeichnung(row['Gruppenname'])[0],
@@ -66,8 +66,8 @@ def insert_direktkandidaturs():
         for _, row in data.iterrows():
             if pd.notna(row['WahlkreisNr']):
                 entry_direkt_kandidatur = DirektKandidatur(
-                    kandidatId=row['id'],
-                    jahr=row['Jahr'],
+                    kandidatId=int(row['id']),
+                    jahr=int(row['Jahr']),
                     wahlkreisId=int(row['WahlkreisNr']),
                     anzahlstimmen=0
                 )

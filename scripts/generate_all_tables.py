@@ -17,9 +17,9 @@ if __name__ == '__main__':
     insert_partei_listen()
     create_direkt_kandidaturen_2017()
     create_direkt_kandidaturen_2021()
-    os.remove('kandidaten_2017_v1.csv')
-    os.remove('kandidaten_2021_v1.csv')
-    os.remove('merged_kandidaten.csv')
+    #os.remove('kandidaten_2017_v1.csv')
+    #os.remove('kandidaten_2021_v1.csv')
+    #os.remove('merged_kandidaten.csv')
     """
     for i in range(1, 252, 50):
         erstimme_generator(wahlkreisId=i, jahr=2017, until=min(i+49, 299))
