@@ -13,7 +13,11 @@ import { PARTEI_FARBE } from "../../models/parteien_politische_farben";
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 interface VerticalBarChartProps {
-  data: { [key: string]: { [year: number]: number } }; // { partyName: { year: value } }
+  data: {
+    [key: string]: {
+      [year: number]: { value: number; percentageChange?: number };
+    };
+  };
   years: number[];
   parties: string[];
 }
@@ -24,18 +28,18 @@ const VerticalBarChart: React.FC<VerticalBarChartProps> = ({
   parties,
 }) => {
   const chartData = {
-    labels: parties, // Party names as labels (x-axis)
+    labels: parties,
     datasets: years.map((year) => ({
       label: `${year}`,
-      data: parties.map((party) => data[party]?.[year] || 0),
+      data: parties.map((party) => data[party]?.[year]?.value || 0),
       backgroundColor: parties.map((party: string) => {
         const partyColor = PARTEI_FARBE.find((p) => p.id === party);
         return partyColor
           ? year === 2021
             ? partyColor.color
-            : partyColor.color + "B3" //Hexadecimal color code for transparency 70%
+            : partyColor.color + "B3"
           : "#000000";
-      }), // Default
+      }),
       borderWidth: 1,
       barThickness: 40,
     })),
@@ -48,7 +52,18 @@ const VerticalBarChart: React.FC<VerticalBarChartProps> = ({
       tooltip: {
         callbacks: {
           label: (tooltipItem: any) => {
-            return `${tooltipItem.dataset.label}: ${tooltipItem.raw}`;
+            const party = parties[tooltipItem.dataIndex];
+            const value = tooltipItem.raw;
+            const percentageChange =
+              years[tooltipItem.datasetIndex] === 2021
+                ? data[party]?.[2021]?.percentageChange
+                : null;
+            const percentageChangeText = percentageChange
+              ? ` (${percentageChange > 0 ? "+" : ""}${percentageChange.toFixed(
+                  1
+                )}%)`
+              : "";
+            return `${tooltipItem.dataset.label}: ${value}${percentageChangeText}`;
           },
         },
       },
@@ -62,12 +77,22 @@ const VerticalBarChart: React.FC<VerticalBarChartProps> = ({
       },
       y: {
         beginAtZero: true,
+        ticks: {
+          callback: (value: any) => `${value}`,
+        },
       },
     },
   };
 
   return (
-    <div style={{ width: "60%", height: "400px", margin: "0 auto" }}>
+    <div
+      style={{
+        width: "60%",
+        height: "400px",
+        margin: "0 auto",
+        position: "relative",
+      }}
+    >
       <Bar data={chartData} options={chartOptions} />
     </div>
   );

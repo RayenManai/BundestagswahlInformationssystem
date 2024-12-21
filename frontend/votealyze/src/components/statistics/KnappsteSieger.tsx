@@ -15,6 +15,10 @@ const Section = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  margin-bottom: 1rem;
+  padding: 1rem;
 `;
 
 const Title = styled.h3`
@@ -33,6 +37,17 @@ const Card = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+`;
+
+const Paragraph = styled.p`
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #444;
+  background-color: #f7f7f7;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 `;
 
 const Detail = styled.div`
@@ -58,11 +73,11 @@ const KnappsteSieger: React.FC<KnappsteSiegerProps> = ({ data }) => {
     <Container>
       <Section>
         <Title>Knappste Sieger</Title>
-        <p>
+        <Paragraph>
           Top 10 der knappsten Sieger: Die knappsten Sieger sind die gewählten
           Erstkandidaten, welche mit dem geringsten Vorsprung gegen- uber ihren
           Konkurrenten gewonnen haben.
-        </p>
+        </Paragraph>
         {data.knappsteSieger.map((item, index) => (
           <Card key={index}>
             <Detail>
@@ -93,11 +108,11 @@ const KnappsteSieger: React.FC<KnappsteSiegerProps> = ({ data }) => {
 
       <Section>
         <Title>Knappste Verlierer</Title>
-        <p>
+        <Paragraph>
           Sollte eine Partei keinen Wahlkreis gewonnen haben, sollen stattdessen
           die Wahlkreise ausgegeben werden, in denen sie am knappsten verloren
           hat.
-        </p>
+        </Paragraph>
         {data.knappsteVerlorene.map((item, index) => (
           <Card key={index}>
             <Detail>
