@@ -89,7 +89,6 @@ class ZweitstimmeErgebnisse(Base):
     wahlkreisId = Column(Integer, ForeignKey('Wahlkreis.wahlkreisId'))
     anzahlstimmen = Column(Integer, nullable=False)
 
-
 class Ergebnisse(Base):
     __tablename__ = 'Ergebnisse'
     parteiId = Column(Integer, ForeignKey('Partei.parteiId'), primary_key=True)
@@ -98,3 +97,20 @@ class Ergebnisse(Base):
     direktMandate = Column(Integer, nullable=False)
     ueberhangsMandate = Column(Integer, nullable=False)
     ausgleichsMandate = Column(Integer, nullable=False)
+
+
+class Landesergebnisse(Base):
+    __tablename__ = 'Landesergebnisse'
+    parteiId = Column(Integer, ForeignKey('Partei.parteiId'), primary_key=True)
+    bundesland = Column(String(2), ForeignKey('Bundesland.kurzbezeichnung'), primary_key=True)
+    jahr = Column(Integer, primary_key=True)
+    sitze = Column(Integer)
+    ueberhang = Column(Integer)
+    direktMandate = Column(Integer)
+
+
+class Gewaehlte_direkt_kandidaten(Base):
+    __tablename__ = 'Gewaehlte_direkt_kandidaten'
+    kandidaturId = Column(Integer, ForeignKey('DirektKandidatur.kandidaturId'), primary_key=True)
+    parteiId = Column(Integer, ForeignKey('Partei.parteiId'))
+    gewonnene_stimmen = Column(Integer, nullable=False)

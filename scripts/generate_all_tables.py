@@ -5,7 +5,6 @@ from insert_all_kandidat_info import *
 import os
 
 if __name__ == '__main__':
-
     create_partei()
     create_bundesland()
     create_wahlkreis()
@@ -21,9 +20,11 @@ if __name__ == '__main__':
     os.remove('kandidaten_2017_v1.csv')
     os.remove('kandidaten_2021_v1.csv')
     os.remove('merged_kandidaten.csv')
+    """
     for i in range(1, 252, 50):
         erstimme_generator(wahlkreisId=i, jahr=2017, until=min(i+49, 299))
         erstimme_generator(wahlkreisId=i, jahr=2021, until=min(i+49, 299))
         zweitstimme_generator(wahlkreisId=i, jahr=2017, until=min(i+49, 299))
         zweitstimme_generator(wahlkreisId=i, jahr=2021, until=min(i+49, 299))
+    """
     # TODO: Try bulk insert

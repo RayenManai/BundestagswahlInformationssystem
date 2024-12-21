@@ -150,60 +150,21 @@ GROUP BY
 
 
 ----------------------------------------------------------------------------------
-CREATE materialized VIEW Gewahlte_direkt_kandidaten_2021 AS
+INSERT INTO "Gewaehlte_direkt_kandidaten" (
 SELECT
-    k.Titel,
-    k.vorname,
-    k.name,
-    p."parteiId",
-    p.kurzbezeichnung AS partei,
-    wk."wahlkreisId" AS wahlkreisId,
-    dk.anzahlStimmen AS gewonnene_stimmen,
-    (dk.anzahlStimmen * 100.0 /
-        (SELECT SUM(dk2.anzahlStimmen)
-         FROM "DirektKandidatur" dk2
-         WHERE dk2."wahlkreisId" = dk."wahlkreisId"
-         AND dk2.jahr = 2021)) AS stimmanteil_prozent
+    dk."kandidaturId",
+    p."parteiId" AS parteiId,
+    dk.anzahlStimmen AS gewonnene_stimmen
 FROM
     "DirektKandidatur" dk
     JOIN "Kandidat" k ON k."kandidatId" = dk."kandidatId"
-    JOIN "Wahlkreis" wk ON wk."wahlkreisId" = dk."wahlkreisId"
     LEFT JOIN "Partei" p ON p."parteiId" = k."parteiId" -- Allow for candidates without a party
 WHERE
-    dk.jahr = 2021
-    AND dk.anzahlStimmen = (
+    dk.anzahlStimmen = (
         SELECT MAX(dk2.anzahlStimmen)
         FROM "DirektKandidatur" dk2
-        WHERE dk2."wahlkreisId" = dk."wahlkreisId" AND dk2.jahr = 2021
-    );
-
-----------------------------------------------------------------------------------
-CREATE materialized VIEW Gewahlte_direkt_kandidaten_2017 AS
-SELECT
-    k.Titel,
-    k.vorname,
-    k.name,
-    p."parteiId",
-    p.kurzbezeichnung AS partei,
-    wk."wahlkreisId" AS wahlkreisId,
-    dk.anzahlStimmen AS gewonnene_stimmen,
-    (dk.anzahlStimmen * 100.0 /
-        (SELECT SUM(dk2.anzahlStimmen)
-         FROM "DirektKandidatur" dk2
-         WHERE dk2."wahlkreisId" = dk."wahlkreisId"
-         AND dk2.jahr = 2017)) AS stimmanteil_prozent
-FROM
-    "DirektKandidatur" dk
-    JOIN "Kandidat" k ON k."kandidatId" = dk."kandidatId"
-    JOIN "Wahlkreis" wk ON wk."wahlkreisId" = dk."wahlkreisId"
-    LEFT JOIN "Partei" p ON p."parteiId" = k."parteiId" -- Allow for candidates without a party
-WHERE
-    dk.jahr = 2017
-    AND dk.anzahlStimmen = (
-        SELECT MAX(dk2.anzahlStimmen)
-        FROM "DirektKandidatur" dk2
-        WHERE dk2."wahlkreisId" = dk."wahlkreisId" AND dk2.jahr = 2017
-    );
+        WHERE dk2."wahlkreisId" = dk."wahlkreisId" AND dk2.jahr = dk.jahr
+    ));
 
 
 ----------------------------------------------------------------------------------
@@ -215,8 +176,8 @@ FROM Partei_Gesamt_Zweitstimmen_2021 pzs
 WHERE pzs.percentage >= 5
    OR (
        SELECT COUNT(*)
-       FROM Gewahlte_direkt_kandidaten_2021 gdk
-       WHERE gdk."parteiId" = pzs."parteiId"
+       FROM "Gewaehlte_direkt_kandidaten" gdk, "DirektKandidatur" d
+       WHERE gdk."parteiId" = pzs."parteiId" and gdk."kandidaturId" = d."kandidaturId" and d.jahr = 2021
    ) >= 3 OR pzs.partei = 'SSW';
 
 
@@ -229,8 +190,8 @@ FROM Partei_Gesamt_Zweitstimmen_2017 pzs
 WHERE pzs.percentage >= 5
    OR (
        SELECT COUNT(*)
-       FROM Gewahlte_direkt_kandidaten_2021 gdk
-       WHERE gdk."parteiId" = pzs."parteiId"
+       FROM "Gewaehlte_direkt_kandidaten" gdk, "DirektKandidatur" d
+       WHERE gdk."parteiId" = pzs."parteiId" and gdk."kandidaturId" = d."kandidaturId" and d.jahr = 2017
    ) >= 3 OR pzs.partei = 'SSW';
 
 
@@ -477,10 +438,11 @@ where s.kurzbezeichnung = gesamt.kurzbezeichnung AND s.iteration = gesamt.iterat
 );
 
 CREATE materialized VIEW Partei_gewonnene_Walhkreise_2021 AS (
-    SELECT b.kurzbezeichnung as bundesland, p."parteiId" as parteiId, count(direkt.wahlkreisId) as wahlkreisSitze
-    FROM ((Parteien_Nach_Huerde_2021 p CROSS JOIN "Bundesland" b)  LEFT OUTER JOIN
-        (Gewahlte_direkt_kandidaten_2021 direkt JOIN "Wahlkreis" w ON direkt.wahlkreisId = w."wahlkreisId")
-        ON p."parteiId" = direkt."parteiId" and b.kurzbezeichnung = w.bundesland)
+    SELECT b.kurzbezeichnung as bundesland, p."parteiId" as parteiId, count(w."wahlkreisId") as wahlkreisSitze
+    FROM (Parteien_Nach_Huerde_2021 p CROSS JOIN "Bundesland" b)  LEFT OUTER JOIN
+        (("Gewaehlte_direkt_kandidaten" direkt JOIN "DirektKandidatur" d ON direkt."kandidaturId" = d."kandidaturId")
+         JOIN "Wahlkreis" w ON b.kurzbezeichnung = w.bundesland AND w."wahlkreisId" = d."wahlkreisId"
+        AND w.bundesland = b.kurzbezeichnung) ON p."parteiId" = direkt."parteiId"
      GROUP BY b.kurzbezeichnung, p."parteiId"
     );
 
@@ -803,22 +765,20 @@ FROM Sitzverteilung s, (SELECT MAX(iteration) as iteration, "parteiId" from Sitz
 WHERE s.iteration = gesamt.iteration AND s."parteiId" = gesamt."parteiId");
 
 
-CREATE MATERIALIZED VIEW Landesergebnisse_2021 AS (
-    SELECT p."parteiId", p.bundesland, p.sitze, z.drohenderUeberhang as Ueberhang, p2.wahlkreisSitze as direktMandate
-    FROM public.parteien_landeslistenverteilung_final_2021 p, ZwischenErgebnis_Mindestsitze_2021 z, partei_gewonnene_walhkreise_2021 p2
+INSERT INTO "Landesergebnisse"("parteiId", jahr, sitze, ueberhang, "direktMandate", "bundesland")
+    (
+    SELECT p."parteiId", 2021, p.sitze, z.drohenderUeberhang as Ueberhang, p2.wahlkreisSitze as direktMandate, p.bundesland
+    FROM parteien_landeslistenverteilung_final_2021 p, ZwischenErgebnis_Mindestsitze_2021 z, partei_gewonnene_walhkreise_2021 p2
     WHERE p."parteiId" = z.parteiId AND p.bundesland = z.bundesland AND p."parteiId" = p2.parteiId AND p.bundesland = p2.bundesland);
 
-CREATE MATERIALIZED VIEW Landesergebnisse_2017 AS (
-    SELECT p."parteiId", p.bundesland, p.sitze, z.drohenderUeberhang as Ueberhang, p2.wahlkreisSitze as direktMandate
-    FROM public.parteien_landeslistenverteilung_final_2017 p, ZwischenErgebnis_Mindestsitze_2017 z, partei_gewonnene_walhkreise_2017 p2
+INSERT INTO "Landesergebnisse"("parteiId", jahr, sitze, ueberhang, "direktMandate", "bundesland")
+(
+    SELECT p."parteiId", 2017, p.sitze, z.drohenderUeberhang as Ueberhang, p2.wahlkreisSitze as direktMandate, p.bundesland
+    FROM parteien_landeslistenverteilung_final_2017 p, ZwischenErgebnis_Mindestsitze_2017 z, partei_gewonnene_walhkreise_2017 p2
     WHERE p."parteiId" = z.parteiId AND p.bundesland = z.bundesland AND p."parteiId" = p2.parteiId AND p.bundesland = p2.bundesland);
 
 INSERT INTO "Ergebnisse" ("parteiId", jahr, "anzahlSitze", "direktMandate", "ueberhangsMandate", "ausgleichsMandate")
-SELECT l."parteiId", 2017, sum(l.sitze), sum(l.direktMandate), sum(l.Ueberhang), 0
-FROM Landesergebnisse_2017 l
-GROUP BY l."parteiId";
+SELECT "parteiId", jahr, sum(sitze), sum("direktMandate"), sum(Ueberhang), 0
+FROM "Landesergebnisse"
+GROUP BY "parteiId", jahr;
 
-INSERT INTO "Ergebnisse" ("parteiId", jahr, "anzahlSitze", "direktMandate", "ueberhangsMandate", "ausgleichsMandate")
-SELECT l."parteiId", 2021, sum(l.sitze), sum(l.direktMandate), sum(l.Ueberhang), 0
-FROM Landesergebnisse_2021 l
-GROUP BY l."parteiId";

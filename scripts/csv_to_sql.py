@@ -109,11 +109,11 @@ def create_direkt_kandidaturen_2021():
 
 
 if __name__ == '__main__':
-    #create_wahlkreis()
-    #create_zweitstimmeErgebnisse_2017()
-    #create_zweitstimmeErgebnisse_2021()
+    create_wahlkreis()
+    create_zweitstimmeErgebnisse_2017()
+    create_zweitstimmeErgebnisse_2021()
     create_direkt_kandidaturen_2017()
-    #create_direkt_kandidaturen_2021()
+    create_direkt_kandidaturen_2021()
 
 
 

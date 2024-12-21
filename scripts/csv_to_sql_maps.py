@@ -290,6 +290,6 @@ def create_bundesland_struktur():
         session.commit()
 
 if __name__ == '__main__':
-    #create_partei()
-    #create_bundesland()
+    create_partei()
+    create_bundesland()
     create_bundesland_struktur()

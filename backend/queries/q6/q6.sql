@@ -35,17 +35,20 @@ knappeste_Sieger as (SELECT b1.*, abs(b1.gewonnene_stimmen - b2.gewonnene_stimme
         FROM "DirektKandidatur" dk2
         WHERE dk2."wahlkreisId" = b1.wahlkreisId AND dk2.jahr = 2021)  order by sprung asc limit 10),
     keineGewinnerParteien as (
-        select pnh."parteiId" from parteien_nach_huerde_2021 pnh
-            except
-        select distinct("parteiId") from gewahlte_direkt_kandidaten_2021
+        select "parteiId"
+        from "Ergebnisse"
+        where "direktMandate" = 0 AND jahr = 2021
     ),
 keineGewinnerParteienSprunge as (
-    select gdk.titel, gdk.vorname, gdk.name, gdk.partei, gdk.wahlkreisid, gdk.gewonnene_stimmen, (gdk.gewonnene_stimmen - dk.anzahlstimmen) as sprung, k.titel as vorg_titel, k.name as vorg_name, k.vorname as vorg_vorname,p.kurzbezeichnung as vorg_partei , dk.anzahlstimmen as vorg_anzahlStimmen
-    from gewahlte_direkt_kandidaten_2021 gdk, keineGewinnerParteien kp, "DirektKandidatur" dk, "Wahlkreis" wk, "Kandidat" k
+    select gdk.titel, gdk.vorname, gdk.name, gdk."parteiName" as partei, gdk."wahlkreisId" as wahlkreisid, gdk.anzahlstimmen as gewonnene_stimmen, (gdk.anzahlstimmen - dk.anzahlstimmen) as sprung, k.titel as vorg_titel, k.name as vorg_name, k.vorname as vorg_vorname,p.kurzbezeichnung as vorg_partei , dk.anzahlstimmen as vorg_anzahlStimmen
+    from (select *
+          from "DirektKandidatur" d2, "Kandidat" k2, "Partei" p3
+          where anzahlstimmen = (select max(d3.anzahlstimmen) from "DirektKandidatur" d3 where d3.jahr = d2.jahr and d3."wahlkreisId" = d2."wahlkreisId")
+          And p3."parteiId" = k2."parteiId" AND k2."kandidatId" = d2."kandidatId" AND jahr=2021) gdk, keineGewinnerParteien kp, "DirektKandidatur" dk, "Wahlkreis" wk, "Kandidat" k
     JOIN "Partei" p ON p."parteiId" = k."parteiId"
 WHERE
     dk.jahr = 2021 AND kp."parteiId" = k."parteiId" AND k."kandidatId" = dk."kandidatId" AND wk."wahlkreisId" = dk."wahlkreisId"
-  AND gdk.wahlkreisid = dk."wahlkreisId"
+  AND gdk."wahlkreisId" = dk."wahlkreisId"
 )
 
 select * from knappeste_Sieger
