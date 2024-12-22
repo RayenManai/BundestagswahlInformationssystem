@@ -18,12 +18,25 @@ class Wahlkreis(Base):
     wahlkreisName = Column(String(100), nullable=False, unique=True)
     bundesland = Column(String(2), ForeignKey('Bundesland.kurzbezeichnung'))
 
-class WalhkreisWahlInfo(Base):
-    __tablename__ = 'WalhkreisWahlInfo'
-    walhkreisId = Column(Integer, ForeignKey('Wahlkreis.wahlkreisId'), primary_key=True)
+class WahlkreisInfo(Base):
+    __tablename__ = 'WahlkreisInfo'
+    wahlkreisId = Column(Integer, ForeignKey('Wahlkreis.wahlkreisId'), primary_key=True)
     jahr = Column(Integer, primary_key=True)
     anzahlWahlBerechtigte = Column(Integer, nullable=False)
     anzahlWaehlende = Column(Integer, nullable=False)
+    flaeche = Column(Float, nullable=False)  # km2
+    bevoelkerung = Column(Float, nullable=False)  # in 1000
+    auslaender_percent = Column(Float, nullable=False)
+    alter_unter_18 = Column(Float, nullable=False)  # percent
+    alter_18_24 = Column(Float, nullable=False)
+    alter_25_34 = Column(Float, nullable=False)
+    alter_35_59 = Column(Float, nullable=False)
+    alter_60_74 = Column(Float, nullable=False)
+    alter_75_mehr = Column(Float, nullable=False)
+    pkw_bestand = Column(Float, nullable=False)  # je 1000 EW
+    pkw_elektro_hybrid = Column(Float, nullable=False)  # percent
+    bruttoinlandsprodukt = Column(Float, nullable=False)  # EUR je EW
+    arbeitslosenquote = Column(Float, nullable=False)
 
 class Bundesland(Base):
     __tablename__ = 'Bundesland'

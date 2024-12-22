@@ -119,6 +119,16 @@ def get_partei_from_kurzbezeichnung(bezeichnung: str) -> tuple[int | None, str |
         return None, None, None
     return l[0]
 
+def clean_and_convert_to_float(value):
+    """
+    Cleans a string by removing thousand separators and converting it to a float.
+    Handles cases where the input is not a string gracefully.
+    """
+    if isinstance(value, str):
+        value = value.replace('.', '').replace(',', '.')
+    return float(value)
+
+
 BUNDESLAND_MAPPER = [
     ('BW', 'Baden-Wuerttemberg'),
     ('BY', 'Bayern'),
@@ -255,6 +265,68 @@ CSV_MAPPER = {
                  DirektKandidatur.jahr: (CSVKey('Jahr', float), int),
                  DirektKandidatur.wahlkreisId: (CSVKey('WahlkreisNr', float), int),
                  DirektKandidatur.anzahlstimmen: DirectValue[float](0.),
+                 }
+            ]
+        }
+    },
+
+    'strukturdaten_2021.csv': {
+        'format': {
+            'csv_file': '../csv_data/strukturdaten_2021.csv',
+            'delimiter': ';',
+            'ignore_rows': [12, 19, 26, 57, 60, 71, 81, 94, 159, 176, 199, 208, 224, 271, 310, 315, 316],
+            'header_rows': 1,
+        },
+        'mapping': {
+            WahlkreisInfo: [
+                {WahlkreisInfo.wahlkreisId: (CSVKey('Wahlkreis-Nr.', float), int),
+                 WahlkreisInfo.anzahlWahlBerechtigte: DirectValue[int](0),
+                 WahlkreisInfo.anzahlWaehlende: DirectValue[int](0),
+                 WahlkreisInfo.jahr: DirectValue[int](2021),
+                 WahlkreisInfo.flaeche: (CSVKey('Fläche am 31.12.2019 (km²)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.bevoelkerung: (CSVKey('Bevölkerung am 31.12.2019 - Insgesamt (in 1000)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.auslaender_percent: (CSVKey('Bevölkerung am 31.12.2019 - Ausländer/-innen (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.alter_unter_18: (CSVKey('Alter von ... bis ... Jahren am 31.12.2019 - unter 18 (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.alter_18_24: (CSVKey('Alter von ... bis ... Jahren am 31.12.2019 - 18-24 (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.alter_25_34: (CSVKey('Alter von ... bis ... Jahren am 31.12.2019 - 25-34 (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.alter_35_59: (CSVKey('Alter von ... bis ... Jahren am 31.12.2019 - 35-59 (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.alter_60_74: (CSVKey('Alter von ... bis ... Jahren am 31.12.2019 - 60-74 (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.alter_75_mehr: (CSVKey('Alter von ... bis ... Jahren am 31.12.2019 - 75 und mehr (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.pkw_bestand: (CSVKey('PKW-Bestand am 01.01.2020 - PKW insgesamt (je 1000 EW)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.pkw_elektro_hybrid: (CSVKey('PKW-Bestand am 01.01.2020 - PKW mit Elektro- oder Hybrid-Antrieb (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.arbeitslosenquote: (CSVKey('Arbeitslosenquote Februar 2021 - insgesamt', str), clean_and_convert_to_float),
+                 WahlkreisInfo.bruttoinlandsprodukt: CSVKey('Bruttoinlandsprodukt 2018 (EUR je EW)', float),
+                 }
+            ]
+        }
+    },
+
+'btw2017_strukturdaten.csv': {
+        'format': {
+            'csv_file': '../csv_data/btw2017_strukturdaten.csv',
+            'delimiter': ';',
+            'ignore_rows': [0, 1, 2, 3, 4, 5, 6, 7, 20, 27, 34, 65, 68, 79, 89, 102, 167, 184, 207, 216, 232, 279, 318, 323, 324],
+            'header_rows': 1,
+        },
+        'mapping': {
+            WahlkreisInfo: [
+                {WahlkreisInfo.wahlkreisId: (CSVKey('Wahlkreis-Nr.', float), int),
+                 WahlkreisInfo.anzahlWahlBerechtigte: DirectValue[int](0),
+                 WahlkreisInfo.anzahlWaehlende: DirectValue[int](0),
+                 WahlkreisInfo.jahr: DirectValue[int](2017),
+                 WahlkreisInfo.flaeche: (CSVKey('Fläche am 31.12.2015 (km²)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.bevoelkerung: (CSVKey('Bevölkerung am 31.12.2015 - Insgesamt (in 1000)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.auslaender_percent: (CSVKey('Bevölkerung am 31.12.2015 - Ausländer/-innen (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.alter_unter_18: (CSVKey('Alter von ... bis ... Jahren am 31.12.2015 - unter 18 (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.alter_18_24: (CSVKey('Alter von ... bis ... Jahren am 31.12.2015 - 18-24 (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.alter_25_34: (CSVKey('Alter von ... bis ... Jahren am 31.12.2015 - 25-34 (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.alter_35_59: (CSVKey('Alter von ... bis ... Jahren am 31.12.2015 - 35-59 (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.alter_60_74: (CSVKey('Alter von ... bis ... Jahren am 31.12.2015 - 60-74 (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.alter_75_mehr: (CSVKey('Alter von ... bis ... Jahren am 31.12.2015 - 75 und mehr (%)', str), clean_and_convert_to_float),
+                 WahlkreisInfo.pkw_bestand: DirectValue[float](0,), #not available
+                 WahlkreisInfo.pkw_elektro_hybrid: DirectValue[float](0,),
+                 WahlkreisInfo.arbeitslosenquote: (CSVKey('Arbeitslosenquote März 2017 - insgesamt', str), clean_and_convert_to_float),
+                 WahlkreisInfo.bruttoinlandsprodukt: CSVKey('Bruttoinlandsprodukt 2014 (EUR je EW)', float),
                  }
             ]
         }

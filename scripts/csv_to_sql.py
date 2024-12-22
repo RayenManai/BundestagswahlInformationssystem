@@ -4,6 +4,7 @@ from itertools import zip_longest
 
 import pandas as pd
 from scripts.csv_to_sql_maps import *
+from sqlalchemy import update
 
 
 def csv_to_dict(csv_file: str, delimiter: str = ';', header_rows: int = 0, ignore_rows: list[int] = list) -> list[dict]:
@@ -43,18 +44,29 @@ def dict_to_sql(dict_list: list[dict], table_key_map: dict[declarative_base, lis
         session.commit()
 
 
-def csv_wahlberechtigte():
+def csv_wahlberechtigte_2021():
     dictionary_list = csv_to_dict('../csv_data/kerg.csv', delimiter=';', ignore_rows=[0, 1], header_rows=3)
     return list(map(lambda entry: {'wahlkreisId': int(entry['Nr']),
                                    'wahlberechtigte': int(entry['Wahlberechtigte; Erststimmen; Endgültig'])},
                 filter(lambda entry: len(entry['Nr']) == 3, dictionary_list)))
 
-def csv_wahlende():
+def csv_wahlende_2021():
     dictionary_list = csv_to_dict('../csv_data/kerg.csv', delimiter=';', ignore_rows=[0, 1], header_rows=3)
     return list(map(lambda entry: {'wahlkreisId': int(entry['Nr']),
                                    'Wählende': int(entry['Wählende; Erststimmen; Endgültig'])},
                 filter(lambda entry: len(entry['Nr']) == 3, dictionary_list)))
 
+def csv_wahlberechtigte_2017():
+    dictionary_list = csv_to_dict('../csv_data/btwkr21_umrechnung_btw17.csv', delimiter=';', ignore_rows=[0, 1, 2, 3, 5, 322], header_rows=1)
+    return list(map(lambda entry: {'wahlkreisId': int(entry['Wkr-Nr.']),
+                                   'wahlberechtigte': int(entry['Wahlberechtigte'])},
+                filter(lambda entry: int(entry['Wkr-Nr.']) <= 299, dictionary_list)))
+
+def csv_wahlende_2017():
+    dictionary_list = csv_to_dict('../csv_data/btwkr21_umrechnung_btw17.csv', delimiter=';', ignore_rows=[0, 1, 2, 3, 5, 322], header_rows=1)
+    return list(map(lambda entry: {'wahlkreisId': int(entry['Wkr-Nr.']),
+                                   'Wählende': int(entry['Wähler'])},
+                filter(lambda entry: int(entry['Wkr-Nr.']) <= 299, dictionary_list)))
 
 def create_wahlkreis():
     # insert Wahlkreisen
@@ -107,13 +119,79 @@ def create_direkt_kandidaturen_2021():
     mapping[DirektKandidatur][0][DirektKandidatur.anzahlstimmen] = anzahl_stimmen
     dict_to_sql(results, mapping, pred=lambda entry: entry['WahlkreisNr'] is not None and len(entry['WahlkreisNr']) > 0 and int(float(entry['Jahr'])) == 2021)
 
+def create_wahlkreisinfo_2021():
+    results = csv_to_dict(**CSV_MAPPER['strukturdaten_2021.csv']['format'])
+    mapping = CSV_MAPPER['strukturdaten_2021.csv']['mapping']
+    dict_to_sql(results, mapping)
+
+def update_wahlkreisinfo_2021():
+    engine = create_engine(DATABASE_URL, echo=True)
+    Base.metadata.create_all(engine)
+    new_session = sessionmaker(bind=engine)
+    with new_session() as session:
+        data1 = csv_wahlberechtigte_2021()
+        data2 = csv_wahlende_2021()
+
+        for entry in data1:
+            stmt = (
+                update(WahlkreisInfo)
+                .where(WahlkreisInfo.wahlkreisId == entry['wahlkreisId'])
+                .where(WahlkreisInfo.jahr == 2021)
+                .values(anzahlWahlBerechtigte=entry['wahlberechtigte'])
+            )
+            session.execute(stmt)
+        for entry in data2:
+            stmt = (
+                update(WahlkreisInfo)
+                .where(WahlkreisInfo.wahlkreisId == entry['wahlkreisId'])
+                .where(WahlkreisInfo.jahr == 2021)
+                .values(anzahlWaehlende=entry['Wählende'])
+            )
+            session.execute(stmt)
+        session.commit()
+
+def update_wahlkreisinfo_2017():
+    engine = create_engine(DATABASE_URL, echo=True)
+    Base.metadata.create_all(engine)
+    new_session = sessionmaker(bind=engine)
+    with new_session() as session:
+        data1 = csv_wahlberechtigte_2017()
+        data2 = csv_wahlende_2017()
+
+        for entry in data1:
+            stmt = (
+                update(WahlkreisInfo)
+                .where(WahlkreisInfo.wahlkreisId == entry['wahlkreisId'])
+                .where(WahlkreisInfo.jahr == 2017)
+                .values(anzahlWahlBerechtigte=entry['wahlberechtigte'])
+            )
+            session.execute(stmt)
+        for entry in data2:
+            stmt = (
+                update(WahlkreisInfo)
+                .where(WahlkreisInfo.wahlkreisId == entry['wahlkreisId'])
+                .where(WahlkreisInfo.jahr == 2017)
+                .values(anzahlWaehlende=entry['Wählende'])
+            )
+            session.execute(stmt)
+        session.commit()
+
+def create_wahlkreisinfo_2017():
+    results = csv_to_dict(**CSV_MAPPER['btw2017_strukturdaten.csv']['format'])
+    mapping = CSV_MAPPER['btw2017_strukturdaten.csv']['mapping']
+    dict_to_sql(results, mapping)
 
 if __name__ == '__main__':
-    create_wahlkreis()
-    create_zweitstimmeErgebnisse_2017()
-    create_zweitstimmeErgebnisse_2021()
-    create_direkt_kandidaturen_2017()
-    create_direkt_kandidaturen_2021()
+    #create_wahlkreis()
+    #create_zweitstimmeErgebnisse_2017()
+    #create_zweitstimmeErgebnisse_2021()
+    #create_direkt_kandidaturen_2017()
+    #create_direkt_kandidaturen_2021()
+    create_wahlkreisinfo_2021()
+    create_wahlkreisinfo_2017()
+    update_wahlkreisinfo_2021()
+    update_wahlkreisinfo_2017()
+
 
 
 
