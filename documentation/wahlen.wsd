@@ -1,26 +1,25 @@
 @startuml
 
 class Ergebnisse {
-  + ParteiId: int
-  + Jahr: int
-  + AnzahlSitze: int
-  + DirektMandate: int
-  + UberhangMandate: int
-  + AusgleichsMandate: int
+  + parteiId: int
+  + jahr: int
+  + anzahlSitze: int
+  + direktMandate: int
+  + uberhangsMandate: int
+  + ausgleichsMandate: int
 }
 
 class Erststimme {
    + id: int
-   + KandidaturId : int
+   + kandidaturId : int
 }
 
-
-class ZweitstimmeErgebnis {
+class ZweitstimmeErgebnisse {
    + id: int
-   + ParteiId : int
-   + WahlkreisId: int
-   + Jahr: int
-   + AnzahlStimmen: int
+   + jahr: int
+   + parteiId : int
+   + wahlkreisId: int
+   + anzahlStimmen: int
 }
 
 class Zweitstimme {
@@ -29,71 +28,113 @@ class Zweitstimme {
 }
 
 class Wahlkreis {
-  + Name: String
-  + WKId: int
-  + Bundesland: String
+  + wahlkreisId: int
+  + walhkreisName: String
+  + bundesland: String
 }
 
-class WahlkreisWahlInfo {
-  + WKId: int
-  + Jahr: int
-  + Anzahlwahlberechtigte: int
-  + AnzahlWaehlende: int
+class WahlkreisInfo {
+  + wahlkreisId: int
+  + jahr: int
+  + anzahlWahlBerechtigte: int
+  + anzahlWaehlende: int
 }
 
 class Bundesland {
-  + Name: String
-  + Kurzbezeichnung: String
+  + name: String
+  + nurzbezeichnung: String
 }
 
 class BundeslandStruktur {
-  + Kurzbezeichnung: String
-  + Jahr: int
-  + Bevoelkerung: int
+  + kurzbezeichnung: String
+  + jahr: int
+  + bevoelkerung: int
   + flaeche: float
 }
 
 class Kandidat {
-  + KandidatId: int
-  + Titel: String
-  + Name: String
-  + Vorname: String
-  + ParteiId: int
+  + kandidatId: int
+  + titel: String
+  + name: String
+  + vorname: String
+  + geburtsjahr: int
+  + parteiId: int
 }
 
 class DirektKandidatur {
   + kandidaturId: int
-  + KandidatId: int
-  + Jahr: int
-  + WahlkreisId: int
-  + AnzahlStimmen: int
+  + kandidatId: int
+  + jahr: int
+  + wahlkreisId: int
+  + anzahlStimmen: int
 }
 
 class Partei {
-  + ParteiId: int
-  + Name: String
+  + parteiId: int
+  + parteiName: String
   + Kurzbezeichnung: String
 }
 
-class ParteiListen {
-  + ParteiId: int
-  + Jahr: int
-  + KandidatId: int
-  + ListenPlatz: int
+class ParteiListe {
+  + parteiId: int
+  + jahr: int
+  + kandidatId: int
+  + listenPlatz: int
+  + landAbk: string
 }
 
+class Landesergebnisse{
+  + parteiId: int
+  + bundesland: string
+  + jahr: int
+  + sitze: int
+  + ueberhang: int
+  + direktMandate: int
+}
 
+class Gewaehlte_direkt_kandidaten{
+  + kandidaturId: int
+  + parteiId: int
+  + gewonnene_stimmen: int
+}
+
+note right of WahlkreisInfo
+  + Einige andere Daten über den Wahlkreis, 
+  die für die Berechnung 
+  einiger Statistiken mit den 
+  Ergebnissen nützlich sein können
+end note
+
+note top of Ergebnisse
+  Diese Tabelle wird nach der Berechnung 
+  der Ergebnisse erstellt und für einen 
+  schnelleren Zugriff gespeichert
+end note
+
+note top of Gewaehlte_direkt_kandidaten
+  Diese Tabelle wird nach der Berechnung 
+  der Ergebnisse erstellt und für einen 
+  schnelleren Zugriff gespeichert
+end note
+
+note top of Landesergebnisse
+  Diese Tabelle wird nach der Berechnung 
+  der Ergebnisse erstellt und für einen 
+  schnelleren Zugriff gespeichert
+end note
 
 Wahlkreis " * " --> " 1 " Bundesland 
 
-WahlkreisWahlInfo " * " --> " 1 " Wahlkreis
+WahlkreisInfo " * " --> " 1 " Wahlkreis
 
 BundeslandStruktur " * " --> " 1 " Bundesland
 
 
-ParteiListen " * " --> " 1 " Partei
+ParteiListe " * " --> " 1 " Partei
 
-ParteiListen " * " -->  " * " Kandidat
+ParteiListe " * " -->  " * " Kandidat
+
+ParteiListe " * " -->  " 1 " Bundesland
 
 Kandidat " *  " --> " 0..1 " Partei
 
@@ -101,16 +142,23 @@ Kandidat " 1 " <-- " * " DirektKandidatur
 
 DirektKandidatur " * " --> " 1 " Wahlkreis
 
-ZweitstimmeErgebnis "  * " --> " 1 " Partei
+ZweitstimmeErgebnisse "  * " --> " 1 " Partei
 
-ZweitstimmeErgebnis " * " --> " 1 " Wahlkreis
+ZweitstimmeErgebnisse " * " --> " 1 " Wahlkreis
 
 
-Ergebnisse  " * "  --> " * "  Partei
+Ergebnisse  " * "  --> " 1 "  Partei
 
 Erststimme " * " --> " 1 " DirektKandidatur 
 
-Zweitstimme " * " --> " 1 " ZweitstimmeErgebnis 
+Zweitstimme " * " --> " 1 " ZweitstimmeErgebnisse 
 
+Landesergebnisse  " * "  --> " 1 "  Partei
+
+Landesergebnisse  " * "  --> " 1 "  Bundesland
+
+Gewaehlte_direkt_kandidaten " * " --> " 1 " DirektKandidatur
+
+Gewaehlte_direkt_kandidaten " * " --> " 0..1 " Partei
 
 @enduml
