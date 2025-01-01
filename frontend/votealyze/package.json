@@ -52,6 +52,7 @@
     ]
   },
   "devDependencies": {
+    "@types/chartjs-plugin-trendline": "^1.0.4",
     "msw": "^2.6.8"
   },
   "msw": {

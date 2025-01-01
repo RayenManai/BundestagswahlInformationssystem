@@ -39,6 +39,7 @@ export interface Abgeordneter {
 export interface Abgeordnete {
   abgeordnete: Abgeordneter[];
 }
+
 export const COALITIONS = [
   { name: "Ampel-Koalition", parties: ["SPD", "GRÜNE", "FDP"] },
   { name: "Jamaika-Koalition", parties: ["CDU", "GRÜNE", "FDP"] },
@@ -62,4 +63,17 @@ export interface KnappsteMandate {
 export interface Statistik1 {
   knappsteSieger: KnappsteMandate[];
   knappsteVerlorene: KnappsteMandate[];
+}
+
+export interface Statistik2 {
+  wahlkreisId: number;
+  weighted_age: number;
+  weighted_direction: number;
+}
+
+export interface Statistik3 {
+  anzahl_stimmen_grune: number;
+  percent_stimmen_grune: number;
+  pkw_elektro_hybrid_percent: number;
+  wahlkreisId: number;
 }

@@ -12,6 +12,8 @@ import { PARTEI_FARBE } from "../../models/parteien_politische_farben";
 import HorizontalStackedBarChart from "../charts/HorizontalStackedBarChart";
 import VerticalBarChart from "../charts/VerticalBarChart";
 import { Doughnut } from "react-chartjs-2";
+import Loader from "../loader";
+import CustomSnackbar from "../utils/CustomSnackbar";
 
 const ResultsPanelContainer = styled.div`
   flex: 1;
@@ -52,15 +54,6 @@ const TableContainer = styled.div`
   tr:hover {
     background-color: #f1f1f1;
   }
-`;
-
-const Wahlbeteiligung = styled.div`
-  flex: 1;
-  padding: 1rem;
-  margin: 0 auto;
-  border: 1px solid #ddd;
-  background-color: #f4f4f4;
-  width: fit-content;
 `;
 
 const Summary = styled.div`
@@ -122,9 +115,20 @@ interface ResultsPanelProps {
 }
 
 const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
+  //TODO: look for a better way to do this
   if (!data) {
-    return <div>Loading or no data available...</div>;
+    return <Loader />;
   }
+  if (Array.isArray(data) && data.length === 0) {
+    return (
+      <CustomSnackbar
+        backgroundColor={"#ff656c"}
+        color={"white"}
+        message="Fehler beim Laden, bitte später erneut versuchen"
+      />
+    );
+  }
+  //
   const wahlBeteiligung = (
     (data.wahlbeteiligte / data.wahlberechtigte) *
     100

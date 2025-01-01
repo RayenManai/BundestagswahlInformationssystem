@@ -9,6 +9,8 @@ import {
 } from "material-react-table";
 
 import { MRT_Localization_DE } from "material-react-table/locales/de";
+import CustomSnackbar from "../utils/CustomSnackbar";
+import Loader from "../loader";
 
 const PageContainer = styled.div`
   display: flex;
@@ -60,8 +62,12 @@ const TableContainer = styled.div`
 const AbgeordneteListe: React.FC = () => {
   const [year, setYear] = useState<number>(2021);
   const [members, setMembers] = useState<Abgeordneter[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
+    setLoading(true);
+    setError(false);
     const fetchMembers = async () => {
       try {
         const response = await fetch(`/api/delegates/?year=${year}`);
@@ -69,6 +75,9 @@ const AbgeordneteListe: React.FC = () => {
         setMembers(data.abgeordnete);
       } catch (error) {
         console.error("Error fetching delegates:", error);
+        setError(true);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -145,10 +154,22 @@ const AbgeordneteListe: React.FC = () => {
           </Select>
         </Label>
       </FilterPanelContainer>
-      <TableContainer>
-        <MRT_Table table={table} />
-        <MRT_TablePagination table={table} />
-      </TableContainer>
+      {error && !loading && (
+        <CustomSnackbar
+          backgroundColor={"#ff656c"}
+          color={"white"}
+          message="Fehler beim Laden, bitte später erneut versuchen"
+        />
+      )}
+
+      {!loading && !error && members.length > 0 && (
+        <TableContainer>
+          <MRT_Table table={table} />
+          <MRT_TablePagination table={table} />
+        </TableContainer>
+      )}
+
+      {loading && <Loader />}
     </PageContainer>
   );
 };

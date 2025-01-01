@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Statistik1 } from "../../models/results";
 import KnappsteSieger from "./KnappsteSieger";
+import ScatterPlot from "./ScatterPlot";
+import ScatterPlot2 from "./ScatterPlot2";
+import { Statistik1, Statistik2, Statistik3 } from "../../models/results";
+import Loader from "../loader";
+import CustomSnackbar from "../utils/CustomSnackbar";
 
 const PageContainer = styled.div`
   display: flex;
@@ -63,14 +67,16 @@ const ContentArea = styled.div`
   padding: 1rem;
 `;
 
-const StatLink = styled.div`
-  margin: 1rem 0;
+const StatLink = styled.div<{ selected: boolean }>`
   padding: 0.5rem;
-  background-color: #f1f1f1;
-  border-radius: 4px;
+  background-color: ${(props) => (props.selected ? "#d0e7ff" : "#e9e9ed")};
+  color: ${(props) => (props.selected ? "#004085" : "#333")};
+  border: ${(props) => (props.selected ? "2px solid #004085" : "none")};
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: ${(props) => (props.selected ? "bold" : "normal")};
   &:hover {
-    background-color: #e1e1e1;
+    background-color: ${(props) => (props.selected ? "#c8ddff" : "#e1e1e1")};
   }
 `;
 
@@ -80,33 +86,77 @@ const StatisticsPage: React.FC = () => {
     "knappste Sieger"
   );
   const [statistikData, setStatistikData] = useState<Statistik1 | null>(null);
+  const [scatterData1, setScatterData1] = useState<Statistik2[] | null>(null);
+  const [scatterData2, setScatterData2] = useState<Statistik3[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const fetchStatistikData = async () => {
     try {
-      const response = await fetch(`/api/q6?year=${year}`);
-      const data: Statistik1 = await response.json();
-      setStatistikData(data);
+      setLoading(true);
+      let url = "";
+      if (selectedStat === "knappste Sieger") {
+        url = `/api/q6?year=${year}`;
+      } else if (selectedStat === "Age") {
+        url = `http://localhost:5000/api/statistik2/${year}`;
+      } else if (selectedStat === "PKW_elektro") {
+        url = `http://localhost:5000/api/statistik3/`;
+      }
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (selectedStat === "knappste Sieger") {
+        setStatistikData(data);
+        setScatterData1(null);
+      } else if (selectedStat === "Age") {
+        setScatterData1(data);
+        setStatistikData(null);
+      } else if (selectedStat === "PKW_elektro") {
+        setScatterData2(data);
+        setScatterData1(null);
+        setStatistikData(null);
+      }
     } catch (error) {
-      console.error("Error fetching Statistik1 data:", error);
-      setStatistikData(null);
+      console.error("Error fetching statistik data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (selectedStat === "knappste Sieger") {
-      fetchStatistikData();
-    }
+    fetchStatistikData();
   }, [year, selectedStat]);
 
   const renderSelectedStat = () => {
-    if (!statistikData) return <div>Keine Daten verfügbar.</div>;
-
-    switch (selectedStat) {
-      case "knappste Sieger":
-        return <KnappsteSieger data={statistikData} />;
-      default:
-        return <div>Wählen Sie eine Statistik aus dem Menü aus.</div>;
+    if (loading) {
+      return <Loader />;
     }
+    if (selectedStat === "knappste Sieger" && statistikData) {
+      return <KnappsteSieger data={statistikData} />;
+    }
+    if (selectedStat === "Age" && scatterData1) {
+      return <ScatterPlot data={scatterData1} />;
+    }
+    if (selectedStat === "PKW_elektro") {
+      if (year == 2017) {
+        return (
+          <CustomSnackbar
+            backgroundColor={"#ff656c"}
+            color={"white"}
+            message="Keine Daten vorhanden"
+          />
+        );
+      } else if (scatterData2) {
+        return <ScatterPlot2 data={scatterData2} />;
+      }
+    }
+    return (
+      <CustomSnackbar
+        backgroundColor={"#ff656c"}
+        color={"white"}
+        message="Keine Daten vorhanden"
+      />
+    );
   };
 
   return (
@@ -125,8 +175,23 @@ const StatisticsPage: React.FC = () => {
             </Select>
           </Label>
         </FilterPanelContainer>
-        <StatLink onClick={() => setSelectedStat("knappste Sieger")}>
+        <StatLink
+          selected={selectedStat === "knappste Sieger"}
+          onClick={() => setSelectedStat("knappste Sieger")}
+        >
           Knappste Sieger
+        </StatLink>
+        <StatLink
+          selected={selectedStat === "Age"}
+          onClick={() => setSelectedStat("Age")}
+        >
+          Politische Richtung vs. Durchschnittsalter der Wahlkreise
+        </StatLink>
+        <StatLink
+          selected={selectedStat === "PKW_elektro"}
+          onClick={() => setSelectedStat("PKW_elektro")}
+        >
+          Verhältnis von GRÜNEN-Zweitstimmen zu Elektro-/Hybrid-PKWs
         </StatLink>
       </Sidebar>
       <ContentArea>{renderSelectedStat()}</ContentArea>
