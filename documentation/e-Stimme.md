@@ -45,7 +45,7 @@
   - Generiert zeitlich beschränkte Tokens (z. B. JSON Web Tokens, JWT) mit Signatur.
   - Überprüft die Token-Gültigkeit bei der Stimmabgabe.
 - Benutzer-Schnittstelle:
-  - Für Mitarbeiter: Einfaches UI zur Eingabe von ID-Nummern und Ausgabe von Tokens.
+  - Für Mitarbeiter: Einfaches UI zur Eingabe von ID-Nummern und Ausgabe von Tokens (nur für Mitarbeiter des Wahllokals zugänglich; login erforderlich)
   - Für Wähler: Touchscreen oder Tastatur zur Eingabe des Tokens und zur Stimmabgabe.
 
 #### Sicherheitsmaßnahmen
@@ -57,6 +57,10 @@
   - Zeitliche Begrenzung minimiert Missbrauchsmöglichkeiten.
 - Manipulationsschutz:
   - Das System erkennt und blockiert mehrfach verwendete Tokens.
+  - Zugriffskontrollmechanismen: Nur Wahllokalmitarbeiter können auf die Benutzeroberfläche zugreifen, um die ID-Nummer einzugeben.
   - [Nice to have]: Überwachung und Logging von Anomalien (z. B. zu viele ungültige Token-Versuche).
 - Wahlbetrugsschutz:
   - Datenbank prüft, ob die ID bereits verwendet wurde.
+
+![sicher](./../resources/sicher.png)
+source: https://github.com/SFTtech/sticker/tree/master/sicher
