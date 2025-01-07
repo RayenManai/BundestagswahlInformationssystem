@@ -751,4 +751,3 @@ INSERT INTO "Ergebnisse" ("parteiId", jahr, "anzahlSitze", "direktMandate", "ueb
 SELECT "parteiId", jahr, sum(sitze), sum("direktMandate"), sum(Ueberhang), 0
 FROM "Landesergebnisse"
 GROUP BY "parteiId", jahr;
-
