@@ -8,9 +8,12 @@ import {
   FormControl,
   Button,
   SelectChangeEvent,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import { BUNDESLAENDER } from "../../models/bundeslaender";
 import { WAHLKREISE } from "../../models/wahlkreise";
+import { useKeycloak } from "@react-keycloak/web";
 
 const Container = styled.div`
   display: flex;
@@ -33,6 +36,11 @@ const GenerateToken: React.FC = () => {
   const [bundesland, setBundesland] = useState<string | null>("");
   const [wahlkreis, setWahlkreis] = useState<string | null>("");
   const [ausweisnummer, setAusweisnummer] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const API_URL = process.env.REACT_APP_API_URL;
 
   const filteredWahlkreise = bundesland
     ? WAHLKREISE[bundesland as keyof typeof WAHLKREISE] || []
@@ -52,20 +60,73 @@ const GenerateToken: React.FC = () => {
     setAusweisnummer(event.target.value);
   };
 
-  const handleGenerateToken = (event: React.FormEvent) => {
+  const computeHash = async (input: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(input);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(hashBuffer))
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+  };
+
+  const { keycloak } = useKeycloak();
+
+  const handleGenerateToken = async (event: React.FormEvent) => {
     event.preventDefault();
-    // Handle token generation logic
-    console.log(
-      "Token generated for Wahlkreis:",
-      wahlkreis,
-      "and Ausweisnummer:",
-      ausweisnummer
-    );
+
+    if (!wahlkreis || !ausweisnummer) {
+      setError("Bitte Wahlkreis und Ausweisnummer ausfüllen.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setToken(null);
+
+    try {
+      const hash = await computeHash(`${ausweisnummer}`);
+      const token = keycloak?.token;
+
+      if (!token) {
+        setError("Fehler: Benutzer nicht authentifiziert.");
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ hash, wahlkreis }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setToken(data.token);
+        sessionStorage.setItem(
+          "wahlkreis",
+          `${wahlkreis} - ${
+            filteredWahlkreise
+              .filter((kreis) => kreis.id === Number(wahlkreis))
+              .at(0)?.name
+          }`
+        );
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || "Fehler beim Abrufen des Tokens.");
+      }
+    } catch (err) {
+      setError("Netzwerkfehler. Bitte versuchen Sie es später erneut.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Container>
-      <Form>
+      <Form onSubmit={handleGenerateToken}>
         <FormControl fullWidth style={{ marginBottom: "1rem" }}>
           <InputLabel id="bundesland-label">Bundesland</InputLabel>
           <Select
@@ -114,10 +175,22 @@ const GenerateToken: React.FC = () => {
           style={{ marginBottom: "1rem" }}
         />
 
-        {/* Generate Token Button */}
-        <Button type="submit" variant="contained" color="primary" fullWidth>
-          Token generieren
-        </Button>
+        {loading ? (
+          <CircularProgress style={{ marginBottom: "1rem" }} />
+        ) : (
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            style={{ marginBottom: "1rem" }}
+          >
+            Token generieren
+          </Button>
+        )}
+
+        {token && <Alert severity="success">Token: {token}</Alert>}
+        {error && <Alert severity="error">{error}</Alert>}
       </Form>
     </Container>
   );

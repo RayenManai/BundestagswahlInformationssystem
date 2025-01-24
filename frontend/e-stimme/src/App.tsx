@@ -9,6 +9,7 @@ import VoteAuth from "./pages/vote/VoteAuth";
 import PrivateRoute from "./PrivateRoute";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
 import keycloak from "./KeycloakService";
+import Stimmzettel from "./pages/vote/Stimmzettel";
 
 const PageContainer = styled.div`
   display: flex;
@@ -65,6 +66,7 @@ const App: React.FC = () => {
                 }
               />
               <Route path="/vote" element={<VoteAuth />} />
+              <Route path="/stimmzettel" element={<Stimmzettel />} />
             </Routes>
           </MainContent>
           <Footer />
