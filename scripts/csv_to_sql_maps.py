@@ -1,7 +1,7 @@
 import warnings
 
-from backend.database.config import DATABASE_URL
-from backend.database.models import *
+from backend.databases.results.config import DATABASE_URL
+from backend.databases.results.models import *
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 

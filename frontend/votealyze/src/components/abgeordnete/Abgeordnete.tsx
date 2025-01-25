@@ -70,7 +70,7 @@ const AbgeordneteListe: React.FC = () => {
     setError(false);
     const fetchMembers = async () => {
       try {
-        const response = await fetch(`/api/delegates/?year=${year}`);
+        const response = await fetch(`http://localhost:5000/api/delegates?year=${year}`);
         const data: Abgeordnete = await response.json();
         setMembers(data.abgeordnete);
       } catch (error) {

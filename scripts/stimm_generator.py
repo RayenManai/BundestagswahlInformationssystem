@@ -1,9 +1,11 @@
-from sqlalchemy import create_engine, select, Select, func
-from sqlalchemy.orm import sessionmaker
-from pprint import pprint
+import inspect
 
-from backend.database.config import DATABASE_URL
-from backend.database.models import *
+from sqlalchemy import create_engine, select, Select, text
+from sqlalchemy.orm import sessionmaker
+
+from backend.databases.results.config import DATABASE_URL
+import backend.databases.results.models as models
+from backend.databases.results.models import *
 
 
 def statement_generator(stimme: int, wahlkreisId: int=0, jahr: int=2021, until: int=-1) -> tuple[sessionmaker[any], Select[any]]:
@@ -26,8 +28,7 @@ def erstimme_generator(wahlkreisId: int=0, jahr: int=2021, until: int=-1) -> Non
         #print(f'This has {session.scalar(select(func.count()).select_from(subquery))} rows')
         #[pprint(vars(row[0])) for row in rows]
         for row in rows:
-            for _ in range(row[0].anzahlstimmen):
-                session.add(Erststimme(kanditaturId=row[0].kandidaturId))
+            session.bulk_save_objects([Erststimme(kanditaturId=row[0].kandidaturId)] * row[0].anzahlstimmen)
         session.commit()
 
 
@@ -36,11 +37,19 @@ def zweitstimme_generator(wahlkreisId: int=0, jahr: int=2021, until: int=-1) -> 
     with (new_session() as session):
         rows = session.execute(stmt)
         for row in rows:
-            for _ in range(row[0].anzahlstimmen):
-                session.add(Zweitstimme(ZSErgebnisId=row[0].id))
+            session.bulk_save_objects([Zweitstimme(ZSErgebnisId=row[0].id)] * row[0].anzahlstimmen)
         session.commit()
 
+
+def change_constraints(activate=True):
+    command = "ENABLE" if activate else "DISABLE"
+    engine = create_engine(DATABASE_URL, echo=True)
+    with engine.connect() as connection:
+        for _, table in inspect.getmembers(models, lambda o: inspect.isclass(o) and o != Base and issubclass(o, Base)):
+            connection.execute(text(f"ALTER TABLE \"{table.__tablename__}\" {command} TRIGGER ALL"))
+
 if __name__ == "__main__":
+    change_constraints()
     erstimme_generator(wahlkreisId=0, jahr=2021)
     zweitstimme_generator(wahlkreisId=0, jahr=2021)
     erstimme_generator(wahlkreisId=0, jahr=2017)
