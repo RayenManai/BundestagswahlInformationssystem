@@ -53,7 +53,7 @@ def get_results(): #contains at most: year, bundesland, wahlkreis
                                  {0: ('wahlberechtigte', int), 1: ('wahlbeteiligte', int)})
         assert len(result3) == 1, "Something is wrong here!"
         return jsonify({'partiesResults': result1, 'partiesOldResults': result2,
-                        'wahlberechtigte' : result3[0]['wahlberechtigte'], 'wahlbeteiligte':result3[0]['wahlbeteiligte']})
+                        'wahlberechtigte': result3[0]['wahlbeteiligte'],'wahlbeteiligte':result3[0]['wahlberechtigte']})
 
     if "bundesland" in values.keys() and "wahlkreis" not in values.keys():
         bundesland = values['bundesland']
@@ -63,7 +63,7 @@ def get_results(): #contains at most: year, bundesland, wahlkreis
                                  {0: ('wahlberechtigte', int), 1: ('wahlbeteiligte', int)})
         assert len(result3) == 1, "Something is wrong here!"
         return jsonify({'partiesResults': result1, 'partiesOldResults': result2,
-                        'wahlberechtigte': result3[0]['wahlberechtigte'], 'wahlbeteiligte':result3[0]['wahlbeteiligte']})
+                        'wahlberechtigte': result3[0]['wahlbeteiligte'],'wahlbeteiligte':result3[0]['wahlberechtigte']})
 
     assert "wahlkreis" in values.keys(), "wahlkreis must be specified"
     wahlkreis = values['wahlkreis']
@@ -75,7 +75,7 @@ def get_results(): #contains at most: year, bundesland, wahlkreis
                              {0: ('wahlberechtigte', int), 1: ('wahlbeteiligte', int)})
     assert len(result3) == 1, "Something is wrong here!"
     return jsonify({'partiesResults': result1, 'partiesOldResults': result2,
-                    'wahlberechtigte': result3[0]['wahlberechtigte'],'wahlbeteiligte':result3[0]['wahlbeteiligte']})
+                    'wahlberechtigte': result3[0]['wahlbeteiligte'],'wahlbeteiligte':result3[0]['wahlberechtigte']})
 
 @app.route('/api/delegates', methods=['GET'])
 def get_delegates():
@@ -84,8 +84,10 @@ def get_delegates():
     output_format = {0: ('name', str), 1: ('party', str), 2: ('bundesland', str),
                      3: ('direktMandat', bool), 4: ('UberhangMandat', bool)}
     if "bundesland" not in values.keys():
-        return run_text_query(engine, angeordnete_bundesweit, {'year': values['year']}, output_format)
-    return run_text_query(engine, angeordnete_landesweit, {'year': values['year'], 'bundesland': values['bundesland']}, output_format)
+        result = run_text_query(engine, angeordnete_bundesweit, {'year': values['year']}, output_format)
+    else:
+        result = run_text_query(engine, angeordnete_landesweit, {'year': values['year'], 'bundesland': values['bundesland']}, output_format)
+    return jsonify({'abgeordnete': result}), 200
 
 @app.route('/api/statistik2/<int:jahr>', methods=['GET'])
 def statistik_2(jahr):

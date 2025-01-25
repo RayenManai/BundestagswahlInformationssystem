@@ -1,7 +1,10 @@
+
 import { http, HttpResponse } from "msw";
 
 // Mock handler for the /token endpoint
+
 export const handlers = [
+    /*
   http.post(`${process.env.REACT_APP_API_URL}/token`, async ({ request }) => {
     const { hash, wahlkreis } = await request.json();
     if (hash && wahlkreis) {
@@ -100,4 +103,5 @@ export const handlers = [
       { status: 400 }
     );
   }),
+     */
 ];

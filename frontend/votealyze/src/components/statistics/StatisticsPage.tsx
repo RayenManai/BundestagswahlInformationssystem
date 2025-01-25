@@ -95,7 +95,7 @@ const StatisticsPage: React.FC = () => {
       setLoading(true);
       let url = "";
       if (selectedStat === "knappste Sieger") {
-        url = `/api/q6?year=${year}`;
+        url = `http://localhost:5000/api/q6?year=${year}`;
       } else if (selectedStat === "Age") {
         url = `http://localhost:5000/api/statistik2/${year}`;
       } else if (selectedStat === "PKW_elektro") {

@@ -7,7 +7,7 @@ import traceback
 
 from backend.utils.TokenManager import TokenManager
 from backend.utils.queries import run_sql_query, insert_vote
-from backend.databases.voting.models import ValideToken, Waehler
+from backend.databases.voting.models import Waehler
 from backend.databases.results.models import DirektKandidatur, Kandidat, Partei, ParteiListe, Wahlkreis, \
     ZweitstimmeErgebnisse
 from backend.databases.voting.config import DATABASE_URL as TOKEN_DB_URL
@@ -20,7 +20,7 @@ voter_intermediate_db = set()
 
 wahlkreis_stimmzettel_cache : list[None | dict] = [None] * 299
 
-token_generator = TokenManager()
+token_generator = TokenManager(token_lifetime=15)
 
 jahr = 2021
 
@@ -117,7 +117,7 @@ def add_voter(user_id: str) -> bool:
 @app.route("/token", methods=["POST"])
 def generate_token():
     parameters = request.json
-    ausweis_id = parameters["ausweis_id"]
+    ausweis_id = parameters["hash"]
     wahlkreis_nr = parameters["wahlkreis"]
     if ausweis_id in voter_intermediate_db:
         return jsonify({"error": "Wählerausweisnummer ist schon eingetragen"}), 403
@@ -137,7 +137,7 @@ def generate_token():
     voter_intermediate_db.remove(ausweis_id)
     return jsonify({"token": token}), 200
 
-@app.route("/auth", methods=["GET"])
+@app.route("/auth", methods=["POST"])
 def auth():
     token = request.json.get("token")
     wahlkreis = token_generator.token_wahlkreis(token)

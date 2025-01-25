@@ -20,7 +20,7 @@ const ResultsPage: React.FC = () => {
 
   // Fetch data based on the current filter settings
   const fetchData = async () => {
-    let url = `/api/results?year=${year}`;
+    let url = `http://localhost:5000/api/results?year=${year}`;
     if (bundesland) url += `&bundesland=${bundesland}`;
     if (wahlkreis) url += `&wahlkreis=${wahlkreis}`;
 
