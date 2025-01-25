@@ -1,0 +1,7 @@
+Nach Änderungen in Keycloak muss folgender Befehl im Keycloak Container ausgeführt werden:
+
+    /opt/keycloak/bin/kc.sh export --file /tmp/export/portal-realm.json --realm BundestagswahlInformationssystem
+
+Danach landet eine neue "portal-realm.json" Datei in dem Directory /keycloak/export. Damit die Änderungen
+beim nächsten Start übernommen werden, muss die alte Datei "portal-realm.json" im Directory "keycloak"
+mit der neu exportierten ersetzt werden.
