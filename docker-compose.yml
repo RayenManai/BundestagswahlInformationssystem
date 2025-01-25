@@ -24,7 +24,6 @@ services:
       - "5433:5432"
     volumes:
       - stimmabgabe:/var/lib/postgresql/data
-      - pgdata_bundestag:/var/lib/postgresql/data  # Persistent storage for database data
       - ./scripts/db-init-scripts:/docker-entrypoint-initdb.d
     networks:
       - keycloak-net
@@ -35,10 +34,10 @@ services:
     command: [ "start-dev", "--import-realm" ]
     restart: unless-stopped
     depends_on:
-      - db
+      - stimmabgabe
     environment:
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://db:5432/keycloak_db
+      KC_DB_URL: jdbc:postgresql://stimmabgabe:5432/keycloak_db
       KC_DB_USERNAME: keycloak_user
       KC_DB_PASSWORD: keycloak_password
 
@@ -53,6 +52,11 @@ services:
     volumes:
       - ./keycloak/portal-realm.json:/opt/keycloak/data/import/portal-realm.json
       - ./keycloak/export:/tmp/export
+
 volumes:
   wahlergebnisse:
   stimmabgabe:
+
+networks:
+  keycloak-net:
+    driver: bridge

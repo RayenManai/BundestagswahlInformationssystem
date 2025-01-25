@@ -1,6 +1,7 @@
 import { http, HttpResponse } from "msw";
 
 export const handlers = [
+    /*
   http.get("/api/results", ({ request }) => {
     const url = new URL(request.url);
 
@@ -218,4 +219,5 @@ export const handlers = [
       console.error("Error in mock handler:", error.message);
     }
   }),
+     */
 ];
