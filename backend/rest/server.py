@@ -2,10 +2,11 @@ import logging
 import time
 
 from flask import Flask, jsonify, request, g
-from sqlalchemy import text, MetaData
 from flask_cors import CORS
 
-from backend.queries import *
+from backend.utils.queries import (DATABASE_URL, create_engine, run_text_query, bundesweit, landesweit,
+                                   beteiligung_bundesweit, wahlkreisweit, angeordnete_bundesweit,
+                                   angeordnete_landesweit, get_wahlkreis_data, get_wahlkreis_data_2)
 
 log = True
 
@@ -23,17 +24,6 @@ app = Flask(__name__)
 CORS(app)
 
 engine = create_engine(DATABASE_URL, echo=True)
-metadata = MetaData()
-
-def run_query(query: str, params: dict=None, output: dict[int, tuple[str, type]]=None) -> list[dict]:
-    if params is None:
-        params = {}
-    if output is None:
-        output = {}
-    with engine.connect() as c:
-         result = (c.execute(text(query), parameters=params)).fetchall()
-    return [{k: t(r[v]) for (v, (k, t)) in output.items()} for r in result]
-
 
 @app.before_request
 def start_timer():
@@ -57,20 +47,20 @@ def get_results(): #contains at most: year, bundesland, wahlkreis
                      3: ('numberOfUberhangMandaten', int), 4: ('firstVotes', int), 5: ('secondVotes', int)}
 
     if "bundesland" not in values.keys() and "wahlkreis" not in values.keys():
-        result1 = run_query(bundesweit, {'year': year}, output_format)
-        result2 = run_query(bundesweit, {'year': 2017}, output_format) if year == 2021 else []
-        result3 = run_query(beteiligung_bundesweit, {'year': year},
-                            {0: ('wahlberechtigte', int), 1: ('wahlbeteiligte', int)})
+        result1 = run_text_query(engine, bundesweit, {'year': year}, output_format)
+        result2 = run_text_query(engine, bundesweit, {'year': 2017}, output_format) if year == 2021 else []
+        result3 = run_text_query(engine, beteiligung_bundesweit, {'year': year},
+                                 {0: ('wahlberechtigte', int), 1: ('wahlbeteiligte', int)})
         assert len(result3) == 1, "Something is wrong here!"
         return jsonify({'partiesResults': result1, 'partiesOldResults': result2,
                         'wahlberechtigte' : result3[0]['wahlberechtigte'], 'wahlbeteiligte':result3[0]['wahlbeteiligte']})
 
     if "bundesland" in values.keys() and "wahlkreis" not in values.keys():
         bundesland = values['bundesland']
-        result1 = run_query(landesweit, {'year': year, 'bundesland': bundesland}, output_format)
-        result2 = run_query(landesweit, {'year': 2017, 'bundesland': bundesland}, output_format) if year == 2021 else []
-        result3 = run_query(beteiligung_bundesweit, {'year': year, 'bundesland': bundesland},
-                            {0: ('wahlberechtigte', int), 1: ('wahlbeteiligte', int)})
+        result1 = run_text_query(engine, landesweit, {'year': year, 'bundesland': bundesland}, output_format)
+        result2 = run_text_query(engine, landesweit, {'year': 2017, 'bundesland': bundesland}, output_format) if year == 2021 else []
+        result3 = run_text_query(engine, beteiligung_bundesweit, {'year': year, 'bundesland': bundesland},
+                                 {0: ('wahlberechtigte', int), 1: ('wahlbeteiligte', int)})
         assert len(result3) == 1, "Something is wrong here!"
         return jsonify({'partiesResults': result1, 'partiesOldResults': result2,
                         'wahlberechtigte': result3[0]['wahlberechtigte'], 'wahlbeteiligte':result3[0]['wahlbeteiligte']})
@@ -78,11 +68,11 @@ def get_results(): #contains at most: year, bundesland, wahlkreis
     assert "wahlkreis" in values.keys(), "wahlkreis must be specified"
     wahlkreis = values['wahlkreis']
     output_format = {0: ('id', str), 1: ('firstVotes', int), 2: ('secondVotes', int)}
-    result1 = run_query(wahlkreisweit, {'year': year, 'wahlkreis': wahlkreis}, output_format)
-    result2 = run_query(wahlkreisweit,{'year': year, 'wahlkreis': wahlkreis}, output_format) \
+    result1 = run_text_query(engine, wahlkreisweit, {'year': year, 'wahlkreis': wahlkreis}, output_format)
+    result2 = run_text_query(engine, wahlkreisweit, {'year': year, 'wahlkreis': wahlkreis}, output_format) \
         if year == 2021 else []
-    result3 = run_query(beteiligung_bundesweit, {'year': year, 'wahlkreis': wahlkreis},
-                        {0: ('wahlberechtigte', int), 1: ('wahlbeteiligte', int)})
+    result3 = run_text_query(engine, beteiligung_bundesweit, {'year': year, 'wahlkreis': wahlkreis},
+                             {0: ('wahlberechtigte', int), 1: ('wahlbeteiligte', int)})
     assert len(result3) == 1, "Something is wrong here!"
     return jsonify({'partiesResults': result1, 'partiesOldResults': result2,
                     'wahlberechtigte': result3[0]['wahlberechtigte'],'wahlbeteiligte':result3[0]['wahlbeteiligte']})
@@ -94,8 +84,8 @@ def get_delegates():
     output_format = {0: ('name', str), 1: ('party', str), 2: ('bundesland', str),
                      3: ('direktMandat', bool), 4: ('UberhangMandat', bool)}
     if "bundesland" not in values.keys():
-        return run_query(angeordnete_bundesweit, {'year': values['year']}, output_format)
-    return run_query(angeordnete_landesweit, {'year': values['year'], 'bundesland': values['bundesland']}, output_format)
+        return run_text_query(engine, angeordnete_bundesweit, {'year': values['year']}, output_format)
+    return run_text_query(engine, angeordnete_landesweit, {'year': values['year'], 'bundesland': values['bundesland']}, output_format)
 
 @app.route('/api/statistik2/<int:jahr>', methods=['GET'])
 def statistik_2(jahr):

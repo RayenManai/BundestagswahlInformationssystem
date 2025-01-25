@@ -1,17 +1,30 @@
 version: '3.8'
 
 services:
-  db:
+  wahlergebnisse:
     image: postgres:latest
-    container_name: bundestag_postgres_container
+    container_name: wahlergebnisse_postgres_container
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: wahldaten
+      POSTGRES_DB: wahlergebnisse
     ports:
       - "5432:5432" 
     volumes:
-      - pgdata_bundestag:/var/lib/postgresql/data  # Persistent storage for database data
+      - wahlergebnisse:/var/lib/postgresql/data  # Persistent storage for database data
+
+  stimmabgabe:
+    image: postgres:latest
+    container_name: stimmabgabe_postgres_container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: stimmabgabe
+    ports:
+      - "5433:5432"
+    volumes:
+      - stimmabgabe:/var/lib/postgresql/data
 
 volumes:
-  pgdata_bundestag:
+  wahlergebnisse:
+  stimmabgabe:

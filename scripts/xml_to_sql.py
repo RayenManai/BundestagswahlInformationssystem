@@ -4,8 +4,8 @@ import xml.etree.ElementTree as ET
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from backend.database.config import DATABASE_URL
-from backend.database.models import DirektKandidat, Partei, Wahlkreis, ErststimmeErgebnisse
+from backend.databases.results.config import DATABASE_URL
+from backend.databases.results.models import DirektKandidat, Partei, Wahlkreis, ErststimmeErgebnisse
 from scripts.csv_to_sql import csv_wahlende
 
 

@@ -2,8 +2,8 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from backend.database.config import DATABASE_URL
-from backend.database.models import Kandidat, DirektKandidatur, ParteiListe
+from backend.databases.results.config import DATABASE_URL
+from backend.databases.results.models import Kandidat, DirektKandidatur, ParteiListe
 from scripts.csv_to_sql_maps import get_partei_from_kurzbezeichnung
 
 

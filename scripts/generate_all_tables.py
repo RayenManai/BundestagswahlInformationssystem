@@ -1,8 +1,7 @@
 from csv_to_sql import *
 from data_cleaning import *
-from stimm_generator import erstimme_generator, zweitstimme_generator
+from stimm_generator import erstimme_generator, zweitstimme_generator, change_constraints
 from insert_all_kandidat_info import *
-import os
 
 if __name__ == '__main__':
     create_partei()
@@ -25,11 +24,11 @@ if __name__ == '__main__':
     #os.remove('kandidaten_2017_v1.csv')
     #os.remove('kandidaten_2021_v1.csv')
     #os.remove('merged_kandidaten.csv')
-    """
+    change_constraints(False)
     for i in range(1, 252, 50):
         erstimme_generator(wahlkreisId=i, jahr=2017, until=min(i+49, 299))
         erstimme_generator(wahlkreisId=i, jahr=2021, until=min(i+49, 299))
         zweitstimme_generator(wahlkreisId=i, jahr=2017, until=min(i+49, 299))
         zweitstimme_generator(wahlkreisId=i, jahr=2021, until=min(i+49, 299))
-    """
+    change_constraints(True)
     # TODO: Try bulk insert

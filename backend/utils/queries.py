@@ -1,8 +1,36 @@
-from sqlalchemy import func, case, create_engine, literal_column, cast, Float, Numeric
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import func, case, create_engine, literal_column, cast, Float, Numeric, Engine, text
+from sqlalchemy.orm import sessionmaker, Query, Session
 
-from backend.database.config import DATABASE_URL
-from backend.database.models import WahlkreisInfo, ZweitstimmeErgebnisse, Base
+from backend.databases.results.config import DATABASE_URL
+from backend.databases.results.models import WahlkreisInfo, ZweitstimmeErgebnisse, Base, Erststimme, Zweitstimme
+
+
+def run_text_query(engine: Engine, query: str, params: dict=None, output: dict[int, tuple[str, type]]=None) -> list[dict]:
+    if params is None:
+        params = {}
+    if output is None:
+        output = {}
+    with engine.connect() as c:
+         result = (c.execute(text(query), parameters=params)).fetchall()
+    return [{k: t(r[v]) for (v, (k, t)) in output.items()} for r in result]
+
+def run_sql_query(session: Session, query: Query, output: dict[int, tuple[str, type]]=None) -> list[dict]:
+    if output is None:
+        output = {}
+    result = session.execute(query).all()
+    return [{k: (t(r[v]) if r[v] is not None else None) for (v, (k, t)) in output.items()} for r in result]
+
+def insert_vote(first_vote, second_vote):
+    engine = create_engine(DATABASE_URL, echo=True)
+    new_session = sessionmaker(bind=engine)
+    with new_session() as session:
+        try:
+            session.add(Erststimme(kanditaturId=first_vote))
+            session.add(Zweitstimme(ZSErgebnisId=second_vote))
+            session.commit()
+        except Exception as e:
+            print(e)
+            session.rollback()
 
 
 def get_wahlkreis_data(jahr):
