@@ -49,8 +49,8 @@ const HalfDoughnutChart: React.FC<HalfDoughnutChartProps> = ({
       tooltip: {
         callbacks: {
           label: (tooltipItem: any) => {
-            const percent = tooltipItem.raw.toFixed(2);
-            return `${tooltipItem.label}: ${percent}%`;
+            const seats = tooltipItem.raw;
+            return `${tooltipItem.label}: ${seats} Sitze`;
           },
         },
       },

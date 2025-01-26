@@ -89,17 +89,18 @@ const StatisticsPage: React.FC = () => {
   const [scatterData1, setScatterData1] = useState<Statistik2[] | null>(null);
   const [scatterData2, setScatterData2] = useState<Statistik3[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const API_URL = process.env.REACT_APP_API_URL;
 
   const fetchStatistikData = async () => {
     try {
       setLoading(true);
       let url = "";
       if (selectedStat === "knappste Sieger") {
-        url = `http://localhost:5000/api/q6?year=${year}`;
+        url = `${API_URL}/api/q6?year=${year}`;
       } else if (selectedStat === "Age") {
-        url = `http://localhost:5000/api/statistik2/${year}`;
+        url = `${API_URL}/api/statistik2/${year}`;
       } else if (selectedStat === "PKW_elektro") {
-        url = `http://localhost:5000/api/statistik3/`;
+        url = `${API_URL}/api/statistik3/`;
       }
 
       const response = await fetch(url);

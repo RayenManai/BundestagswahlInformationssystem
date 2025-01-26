@@ -17,10 +17,11 @@ const ResultsPage: React.FC = () => {
   const [wahlkreis, setWahlkreis] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
   const [dataType, setDataType] = useState<string>("global");
+  const API_URL = process.env.REACT_APP_API_URL;
 
   // Fetch data based on the current filter settings
   const fetchData = async () => {
-    let url = `http://localhost:5000/api/results?year=${year}`;
+    let url = `${API_URL}/api/results?year=${year}`;
     if (bundesland) url += `&bundesland=${bundesland}`;
     if (wahlkreis) url += `&wahlkreis=${wahlkreis}`;
 

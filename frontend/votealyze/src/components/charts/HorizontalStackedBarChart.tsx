@@ -55,7 +55,7 @@ const HorizontalStackedBarChart: React.FC<HorizontalStackedBarChartProps> = ({
       tooltip: {
         callbacks: {
           label: (tooltipItem: any) => {
-            return `${tooltipItem.dataset.label}: ${tooltipItem.raw}`;
+            return `${tooltipItem.dataset.label}: ${tooltipItem.raw} Sitze`;
           },
         },
       },

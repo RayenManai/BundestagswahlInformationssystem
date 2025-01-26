@@ -64,13 +64,14 @@ const AbgeordneteListe: React.FC = () => {
   const [members, setMembers] = useState<Abgeordneter[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
+  const API_URL = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     setLoading(true);
     setError(false);
     const fetchMembers = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/delegates?year=${year}`);
+        const response = await fetch(`${API_URL}/api/delegates?year=${year}`);
         const data: Abgeordnete = await response.json();
         setMembers(data.abgeordnete);
       } catch (error) {
@@ -108,13 +109,13 @@ const AbgeordneteListe: React.FC = () => {
         accessorKey: "direktMandat",
         header: "Direktmandat",
         filterVariant: "checkbox",
-        Cell: ({ cell }) => (cell.getValue() === "true" ? "Ja" : "Nein"),
+        Cell: ({ cell }) => (cell.getValue() === true ? "✔️" : "❌"),
       },
       {
         accessorKey: "UberhangMandat",
         header: "Überhangmandat",
         filterVariant: "checkbox",
-        Cell: ({ cell }) => (cell.getValue() === "true" ? "Ja" : "Nein"),
+        Cell: ({ cell }) => (cell.getValue() === true ? "✔️" : "❌"),
       },
     ],
     [members]
