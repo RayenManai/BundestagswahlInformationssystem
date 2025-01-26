@@ -1,9 +1,14 @@
+import json
+import os
+import secrets
+import requests
+import traceback
+
+import jose.jwt as jwt
 from flask import Flask, jsonify, request
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask_cors import CORS
-
-import traceback
 
 from backend.utils.TokenManager import TokenManager
 from backend.utils.queries import run_sql_query, insert_vote
@@ -15,6 +20,43 @@ from backend.databases.results.config import DATABASE_URL as RESULTS_DB_URL
 
 app = Flask(__name__)
 CORS(app)
+
+rest_dir = os.path.dirname(__file__)
+
+app.config.update({
+    "SECRET_KEY": secrets.token_hex(32),
+    "OIDC_CLIENT_SECRETS": os.path.join(rest_dir, "../../.venv/client_secrets.json"),
+    "OIDC_SCOPES": [],
+    "OIDC_INTROSPECTION_AUTH_METHOD": "client_secret_post"
+})
+
+keycloak_config_file = os.path.join(rest_dir, "../../.venv/keycloak_config.json")
+jwks_url = ""
+audience = ""
+issuer = ""
+
+def validate_token(rq) -> bool:
+    global jwks_url, audience, issuer
+    if len(jwks_url) == 0 or len(audience) == 0 or len(issuer) == 0:
+        values = json.load(open(keycloak_config_file, "r"))
+        print(values)
+        jwks_url = values["jwks_url"]
+        issuer = values["issuer"]
+        audience = values["audience"]
+    try:
+        token = rq.headers['Authorization'].split(None, 1)[1].strip()
+        response = requests.get(jwks_url)
+        response.raise_for_status()
+        jwks = response.json()
+        jwt.decode(
+            token,
+            jwks,
+            audience=audience,
+            issuer=issuer
+        )
+        return True
+    except Exception:
+        return False
 
 voter_intermediate_db = set()
 
@@ -116,6 +158,8 @@ def add_voter(user_id: str) -> bool:
 
 @app.route("/token", methods=["POST"])
 def generate_token():
+    if not validate_token(rq=request):
+        return {"error": "You are not authorized to generate tokens"}, 403
     parameters = request.json
     ausweis_id = parameters["hash"]
     wahlkreis_nr = parameters["wahlkreis"]
@@ -165,4 +209,4 @@ def process_vote():
     return jsonify({"message": "Voting process terminated"}), 200
 
 if __name__ == "__main__":
-    app.run(port=5001, debug=True)
+    app.run(port=5000, debug=True)
