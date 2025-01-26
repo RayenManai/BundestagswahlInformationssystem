@@ -156,6 +156,43 @@ def get_wahlkreis_data_2():
         )
         return combined_query.all()
 
+direkt_kandidat_create_view = (
+    '''
+CREATE MATERIALIZED VIEW IF NOT EXISTS direkt_mandate_ueberhang AS (
+(
+WITH only_direkt AS (
+SELECT d."kandidaturId", concat((CASE WHEN k.titel is NULL THEN '' ELSE concat(k.titel, ' ') END), k.vorname, ' ', k.name) as name, p."kurzbezeichnung" as partei, p."parteiId", w.bundesland as bundesland,
+ d.anzahlstimmen
+FROM "DirektKandidatur" d, "Kandidat" k, "Wahlkreis" w, "Partei" p, "Gewaehlte_direkt_kandidaten" g
+WHERE g."kandidaturId" = d."kandidaturId" AND g."parteiId" = p."parteiId" AND d."kandidatId" = k."kandidatId"
+AND d."wahlkreisId" = w."wahlkreisId" AND d.jahr = 2017 AND k."parteiId" = p."parteiId"
+)
+SELECT "kandidaturId", name, partei, o1.bundesland, true as direktMandat, 2017 as jahr, (SELECT COUNT(*)
+                                                FROM only_direkt o2
+                                                where o2.anzahlstimmen > o1.anzahlstimmen AND o1.bundesland = o2.bundesland
+                                                AND o1."parteiId" = o2."parteiId"
+                                                ) >= l.sitze - l.ueberhang as ueberhangMandat
+from only_direkt o1, "Landesergebnisse" l
+where l."parteiId" = o1."parteiId" AND l.bundesland = o1.bundesland AND l.jahr = 2017
+)) UNION ALL (
+WITH only_direkt AS (
+SELECT d."kandidaturId", concat((CASE WHEN k.titel is NULL THEN '' ELSE concat(k.titel, ' ') END), k.vorname, ' ', k.name) as name, p."kurzbezeichnung" as partei, p."parteiId", w.bundesland as bundesland,
+ d.anzahlstimmen
+FROM "DirektKandidatur" d, "Kandidat" k, "Wahlkreis" w, "Partei" p, "Gewaehlte_direkt_kandidaten" g
+WHERE g."kandidaturId" = d."kandidaturId" AND g."parteiId" = p."parteiId" AND d."kandidatId" = k."kandidatId"
+AND d."wahlkreisId" = w."wahlkreisId" AND d.jahr = 2021 AND k."parteiId" = p."parteiId"
+)
+SELECT "kandidaturId", name, partei, o1.bundesland, true as direktMandat, 2021 as jahr, (SELECT COUNT(*)
+                                                FROM only_direkt o2
+                                                where o2.anzahlstimmen > o1.anzahlstimmen AND o1.bundesland = o2.bundesland
+                                                AND o1."parteiId" = o2."parteiId"
+                                                ) >= l.sitze - l.ueberhang as ueberhangMandat
+from only_direkt o1, "Landesergebnisse" l
+where l."parteiId" = o1."parteiId" AND l.bundesland = o1.bundesland AND l.jahr = 2021
+);
+    '''
+)
+
 bundesweit = (
 '''
 SELECT p.kurzbezeichnung AS "Partei_kurzbezeichnung", e."anzahlSitze" AS "Ergebnisse_anzahlSitze",
@@ -193,7 +230,15 @@ GROUP BY p.kurzbezeichnung, d.anzahlstimmen, z.anzahlstimmen
 '''
 )
 
-angeordnete_bundesweit =(
+direkt_mandat = direkt_kandidat_create_view + (
+'''
+SELECT d.name, d.partei, d.bundesland, d.direktMandat, d.ueberhangmandat
+FROM direkt_mandate_ueberhang d,  "DirektKandidatur" k
+WHERE k."kandidaturId" = d."kandidaturId" AND k.jahr = :year AND k."wahlkreisId" = :wahlkreis AND d.jahr = :year
+'''
+)
+
+angeordnete_bundesweit = direkt_kandidat_create_view + (
 '''
 WITH ohneDirekt AS (
     (SELECT p."kandidatId"
@@ -216,21 +261,11 @@ FROM listen_gewinner l
 WHERE l.platz <= l.sitze - l."direktMandate")
 UNION
 (
-WITH only_direkt AS (
-SELECT concat((CASE WHEN k.titel is NULL THEN '' ELSE concat(k.titel, ' ') END), k.vorname, ' ', k.name) as name, p."kurzbezeichnung" as partei, p."parteiId", w.bundesland as bundesland,
- d.anzahlstimmen
-FROM "DirektKandidatur" d, "Kandidat" k, "Wahlkreis" w, "Partei" p, "Gewaehlte_direkt_kandidaten" g
-WHERE g."kandidaturId" = d."kandidaturId" AND g."parteiId" = p."parteiId" AND d."kandidatId" = k."kandidatId"
-AND d."wahlkreisId" = w."wahlkreisId" AND d.jahr = :year AND k."parteiId" = p."parteiId" 
-) 
-SELECT name, partei, o1.bundesland, true as direktMandat, (SELECT COUNT(*) 
-                                                FROM only_direkt o2
-                                                where o2.anzahlstimmen > o1.anzahlstimmen AND o1.bundesland = o2.bundesland
-                                                AND o1."parteiId" = o2."parteiId"
-                                                ) >= l.sitze - l.ueberhang
-from only_direkt o1, "Landesergebnisse" l
-where l."parteiId" = o1."parteiId" AND l.bundesland = o1.bundesland AND l.jahr = :year
-)
+SELECT d.name, d.partei, d.bundesland, d.direktMandat, d.ueberhangmandat
+from direkt_mandate_ueberhang d
+where d.jahr = :year
+);
+
 '''
 )
 
@@ -286,3 +321,56 @@ WHERE w."wahlkreisId" = i."wahlkreisId" AND i.jahr = :year
 beteiligung_landesweit = beteiligung_bundesweit + ' AND w.bundesland = :bundesland'
 
 beteiligung_wahlkreis= beteiligung_bundesweit + ' AND w."wahlkreisId" = :wahlkreis'
+
+knappste_sieger = (
+    '''
+    with besterZweiKandidatenProBundesland AS
+    (SELECT
+    concat((CASE WHEN k.titel is NULL THEN '' ELSE concat(k.titel, ' ') END), k.vorname, ' ', k.name) as name,
+    p.kurzbezeichnung AS partei,
+    wk."wahlkreisId" AS wahlkreisId,
+    dk.anzahlStimmen AS gewonnene_stimmen
+FROM
+    "DirektKandidatur" dk
+    JOIN "Kandidat" k ON k."kandidatId" = dk."kandidatId"
+    JOIN "Wahlkreis" wk ON wk."wahlkreisId" = dk."wahlkreisId"
+    LEFT JOIN "Partei" p ON p."parteiId" = k."parteiId" -- Allow for candidates without a party
+WHERE
+    dk.jahr = :year
+    AND(dk.anzahlStimmen = (
+        SELECT MAX(dk2.anzahlStimmen)
+        FROM "DirektKandidatur" dk2
+        WHERE dk2."wahlkreisId" = dk."wahlkreisId" AND dk2.jahr = :year
+    ) OR (SELECT count(*) FROM "DirektKandidatur" dk3
+        WHERE dk3."wahlkreisId" = dk."wahlkreisId" and dk3.anzahlstimmen > dk.anzahlstimmen AND dk3.jahr = :year) = 1)),
+knappeste_Sieger as (SELECT b1.*, abs(b1.gewonnene_stimmen - b2.gewonnene_stimmen) as sprung, b2.name as vorg_name, b2.partei as vorg_partei, b2.gewonnene_stimmen as vorg_anzahlStimmen 
+                     from besterZweiKandidatenProBundesland b1, besterZweiKandidatenProBundesland b2
+                  where b1.wahlkreisId = b2.wahlkreisId and b1.partei != b2.partei
+                  and b1.gewonnene_stimmen = (SELECT MAX(dk2.anzahlStimmen)
+        FROM "DirektKandidatur" dk2
+        WHERE dk2."wahlkreisId" = b1.wahlkreisId AND dk2.jahr = :year)  order by sprung asc limit 10),
+    keineGewinnerParteien as (
+        select "parteiId"
+        from "Ergebnisse"
+        where "direktMandate" = 0 AND jahr = :year
+    ),
+keineGewinnerParteienSprunge as (
+    select concat((CASE WHEN gdk.titel is NULL THEN '' ELSE concat(gdk.titel, ' ') END), gdk.vorname, ' ', gdk.name) as name, gdk."kurzbezeichnung" as partei, gdk."wahlkreisId" as wahlkreisid, gdk.anzahlstimmen as gewonnene_stimmen, (gdk.anzahlstimmen - dk.anzahlstimmen) as sprung, concat((CASE WHEN k.titel is NULL THEN '' ELSE concat(k.titel, ' ') END), k.vorname, ' ', k.name) as vorg_name, p.kurzbezeichnung as vorg_partei , dk.anzahlstimmen as vorg_anzahlStimmen
+    from (select *
+          from "DirektKandidatur" d2, "Kandidat" k2, "Partei" p3
+          where anzahlstimmen = (select max(d3.anzahlstimmen) from "DirektKandidatur" d3 where d3.jahr = d2.jahr and d3."wahlkreisId" = d2."wahlkreisId")
+          And p3."parteiId" = k2."parteiId" AND k2."kandidatId" = d2."kandidatId" AND jahr=:year) gdk, keineGewinnerParteien kp, "DirektKandidatur" dk, "Wahlkreis" wk, "Kandidat" k
+    JOIN "Partei" p ON p."parteiId" = k."parteiId"
+WHERE
+    dk.jahr = :year AND kp."parteiId" = k."parteiId" AND k."kandidatId" = dk."kandidatId" AND wk."wahlkreisId" = dk."wahlkreisId"
+  AND gdk."wahlkreisId" = dk."wahlkreisId"
+)
+
+select k.*, true as sieger from knappeste_Sieger k
+union all
+select k1.*, false as sieger
+from keineGewinnerParteienSprunge k1
+group by k1.name, k1.partei, k1.wahlkreisid, k1.gewonnene_stimmen, k1.vorg_partei, k1.sprung,  k1.vorg_name, k1.vorg_anzahlStimmen
+having sprung = (select MIN(sprung) from keineGewinnerParteienSprunge k2 where k1.vorg_partei = k2.vorg_partei)
+    '''
+)
