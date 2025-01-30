@@ -10,6 +10,7 @@ import {
   Tooltip,
   Legend,
   ChartOptions,
+  LineController,
 } from "chart.js";
 import { WAHLKREISE } from "../../models/wahlkreise";
 import { Statistik2 } from "../../models/results";
@@ -19,8 +20,8 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  LineController,
   Title,
-
   Tooltip,
   Legend
 );
