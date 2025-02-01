@@ -61,7 +61,7 @@ def get_wahlkreis_data(jahr):
         else_=literal_column("NULL")
     )
 
-    engine = create_engine(DATABASE_URL, echo=True)
+    engine = create_engine(DATABASE_URL, echo=False)
     Base.metadata.create_all(engine)
     new_session = sessionmaker(bind=engine)
     with new_session() as session:
@@ -106,7 +106,7 @@ def get_wahlkreis_data(jahr):
         return combined_query.all()
 
 def get_wahlkreis_data_2():
-    engine = create_engine(DATABASE_URL, echo=True)
+    engine = create_engine(DATABASE_URL, echo=False)
     Base.metadata.create_all(engine)
     new_session = sessionmaker(bind=engine)
 

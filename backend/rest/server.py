@@ -11,7 +11,7 @@ from backend.utils.queries import (DATABASE_URL, create_engine, run_text_query, 
 app = Flask(__name__)
 CORS(app)
 
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL, echo=False)
 
 """
 log = True
@@ -111,7 +111,6 @@ def get_knappste_sieger():
     result = run_text_query(engine, knappste_sieger, {'year': values['year']}, output_format)
     sieger, verlierer = [], []
     [sieger.append(r) if r['ist_sieger'] else verlierer.append(r) for r in result]
-    print({'knappsteSieger': sieger, 'knappsteVerlorene': verlierer})
     return jsonify({'knappsteSieger': sieger, 'knappsteVerlorene': verlierer}), 200
 
 
@@ -142,4 +141,4 @@ def statistik_3():
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=False, threaded=True)

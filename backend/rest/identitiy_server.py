@@ -42,7 +42,6 @@ def validate_token(rq) -> bool:
     global jwks_url, audience, issuer
     if len(jwks_url) == 0 or len(audience) == 0 or len(issuer) == 0:
         values = json.load(open(keycloak_config_file, "r"))
-        print(values)
         jwks_url = values["jwks_url"]
         issuer = values["issuer"]
         audience = values["audience"]
@@ -69,10 +68,10 @@ token_generator = TokenManager(token_lifetime=15)
 
 jahr = 2021
 
-voting_engine = create_engine(TOKEN_DB_URL, echo=True)
+voting_engine = create_engine(TOKEN_DB_URL, echo=False)
 new_voting_session = sessionmaker(bind=voting_engine)
 
-results_engine = create_engine(RESULTS_DB_URL, echo=True)
+results_engine = create_engine(RESULTS_DB_URL, echo=False)
 new_results_session = sessionmaker(bind=results_engine)
 
 def get_stimmzettel(wahlkreis: int | None) -> dict:
@@ -277,7 +276,7 @@ def copy_table(export_cmd, import_cmd):
         print(f"Error during data transfer: {e}")
 
 def insert_vote(first_vote, second_vote):
-    engine = create_engine(TOKEN_DB_URL, echo=True)
+    engine = create_engine(TOKEN_DB_URL, echo=False)
     new_session = sessionmaker(bind=engine)
     with new_session() as session:
         try:
@@ -289,4 +288,4 @@ def insert_vote(first_vote, second_vote):
             session.rollback()
 
 if __name__ == "__main__":
-    app.run(port=5001, debug=True)
+    app.run(host='127.0.0.1', port=5001, debug=False, threaded=True)

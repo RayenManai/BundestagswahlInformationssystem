@@ -19,7 +19,7 @@ class TokenManager:
         self._token_queue = []
         self._lock = threading.Lock()
         self._condition = threading.Condition(self._lock)
-        self._voting_engine = create_engine(TOKEN_DB_URL, echo=True)
+        self._voting_engine = create_engine(TOKEN_DB_URL, echo=False)
         self._new_voting_session = sessionmaker(bind=self._voting_engine)
         self._TOKEN_LIFE = token_lifetime
         threading.Thread(target=self.__main__, daemon=True).start()

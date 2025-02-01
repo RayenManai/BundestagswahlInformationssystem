@@ -64,6 +64,14 @@ navigate to `/frontend` then run `docker compose up -d`
    `npm start`
 
 ## ⚡ Benchmarks
+For benchmarking, we use [locust](https://locust.io/).
+
+1. navigate to [backend/rest/benchmark.py](backend/rest/benchmark.py)
+2. run the command
+```shell
+   locust -f benchmark.py --host=http://localhost:5000/ --users <number_of_users> --spawn-rate <number_of_started_clients_per_sec> --run-time <time>
+```
+
 
 ## 💻 Demo
 

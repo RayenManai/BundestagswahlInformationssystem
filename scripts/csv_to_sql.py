@@ -27,7 +27,7 @@ def dict_to_sql(dict_list: list[dict], table_key_map: dict[declarative_base, lis
     :return: None
     Each entry of the dict_list inserts the corresponding row in the tables specified
     """
-    engine = create_engine(DATABASE_URL, echo=True)
+    engine = create_engine(DATABASE_URL, echo=False)
     Base.metadata.create_all(engine)
     new_session = sessionmaker(bind=engine)
     with new_session() as session:
@@ -125,7 +125,7 @@ def create_wahlkreisinfo_2021():
     dict_to_sql(results, mapping)
 
 def update_wahlkreisinfo_2021():
-    engine = create_engine(DATABASE_URL, echo=True)
+    engine = create_engine(DATABASE_URL, echo=False)
     Base.metadata.create_all(engine)
     new_session = sessionmaker(bind=engine)
     with new_session() as session:
@@ -151,7 +151,7 @@ def update_wahlkreisinfo_2021():
         session.commit()
 
 def update_wahlkreisinfo_2017():
-    engine = create_engine(DATABASE_URL, echo=True)
+    engine = create_engine(DATABASE_URL, echo=False)
     Base.metadata.create_all(engine)
     new_session = sessionmaker(bind=engine)
     with new_session() as session:

@@ -335,7 +335,7 @@ CSV_MAPPER = {
 
 
 def create_partei():
-    engine = create_engine(DATABASE_URL, echo=True)
+    engine = create_engine(DATABASE_URL, echo=False)
     Base.metadata.create_all(engine)
     new_session = sessionmaker(bind=engine)
     with new_session() as session:
@@ -344,7 +344,7 @@ def create_partei():
         session.commit()
 
 def create_bundesland():
-    engine = create_engine(DATABASE_URL, echo=True)
+    engine = create_engine(DATABASE_URL, echo=False)
     Base.metadata.create_all(engine)
     new_session = sessionmaker(bind=engine)
     with new_session() as session:
@@ -353,7 +353,7 @@ def create_bundesland():
         session.commit()
 
 def create_bundesland_struktur():
-    engine = create_engine(DATABASE_URL, echo=True)
+    engine = create_engine(DATABASE_URL, echo=False)
     Base.metadata.create_all(engine)
     new_session = sessionmaker(bind=engine)
     with new_session() as session:
