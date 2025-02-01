@@ -1,4 +1,18 @@
 /*
+  Entfernen aller Materialized views
+ */
+SELECT 'DROP MATERIALIZED VIEW ' || string_agg(oid::regclass::text, ', ')
+FROM   pg_class
+WHERE  relkind = 'm';
+
+/*
+  Zurücksetzen aller berechneten Ergebnisse
+ */
+TRUNCATE TABLE  "Ergebnisse";
+TRUNCATE TABLE  "Landesergebnisse";
+TRUNCATE TABLE  "Gewaehlte_direkt_kandidaten";
+
+/*
  Die Herausforderung bestand darin, die Sainte-Laguë/Schepers-Divisor-Methode zur Berechnung des Bundestagswahlergebnisses
  mit SQL zu implementieren.
 

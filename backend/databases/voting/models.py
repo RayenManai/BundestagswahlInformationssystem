@@ -6,11 +6,6 @@ Base = declarative_base()
 class Waehler(Base):
     __tablename__ = 'waehler'
     waehlerId = Column(String(64), primary_key=True) # hashed value of the id
-    # gewaehlt = Column(Boolean, nullable=False)
-    # wahlkreis = Column(Integer, nullable=False)
-    # __table_args__ = (
-    #     CheckConstraint('wahlkreis BETWEEN 1 AND 299', name='check_wahlkreis_range'),
-    # )
 
 class ValideToken(Base):
     __tablename__ = 'validetoken'
@@ -22,3 +17,13 @@ class ValideToken(Base):
 class VerbrauchteToken(Base):
     __tablename__ = 'verbrauchtetoken'
     id = Column(String(64), primary_key=True)
+
+class Erststimme(Base):
+    __tablename__ = 'erststimme'
+    id = Column(Integer, primary_key=True)
+    kandidaturId = Column(Integer, nullable=False)
+
+class Zweitstimme(Base):
+    __tablename__ = 'zweitstimme'
+    id = Column(Integer, primary_key=True)
+    ZSErgebnisId = Column(Integer, nullable=False)
