@@ -242,28 +242,35 @@ def refresh():
         return {"error": "An error on the server side occured"}, 500
     update_pgpass({'host': T_HOST, 'port': T_PORT, 'dbname': T_NAME, 'user': T_USER, 'password': T_PWD})
     update_pgpass({'host': R_HOST, 'port': R_PORT, 'dbname': R_NAME, 'user': R_USER, 'password': R_PWD})
-    copy_table("Erststimme")
-    copy_table("Zweitstimme")
+    export_cmd = (
+        f"psql -h {T_HOST} -p {T_PORT} -U {T_USER} -d {T_NAME} "
+        f"-c \"COPY (SELECT \\\"kandidaturId\\\" from Erststimme) TO STDOUT WITH CSV HEADER\" > erststimme.csv"
+    )
+    import_cmd = (
+        f"psql -h {R_HOST} -p {R_PORT} -U {R_USER} -d {R_NAME} "
+        f"-c \"COPY \\\"Erststimme\\\"(\\\"kanditaturId\\\") FROM STDIN WITH CSV HEADER\" < erststimme.csv"
+    )
+    copy_table(export_cmd, import_cmd)
+    export_cmd = (
+        f"psql -h {T_HOST} -p {T_PORT} -U {T_USER} -d {T_NAME} "
+        f"-c \"COPY (SELECT \\\"ZSErgebnisId\\\" from Zweitstimme) TO STDOUT WITH CSV HEADER\" > zweitstimme.csv"
+    )
+    import_cmd = (
+        f"psql -h {R_HOST} -p {R_PORT} -U {R_USER} -d {R_NAME} "
+        f"-c \"COPY \\\"Zweitstimme\\\"(\\\"ZSErgebnisId\\\") FROM STDIN WITH CSV HEADER\" < zweitstimme.csv"
+    )
+    copy_table(export_cmd, import_cmd)
     run_text_query(engine=voting_engine, query='TRUNCATE TABLE erststimme; TRUNCATE TABLE zweitstimme')
     run_text_query(engine=results_engine, query=aggregate_all_votes)
     run_sql_script(engine=results_engine)
     return {"message": "Refreshed"}, 200
 
-def copy_table(table_name):
+def copy_table(export_cmd, import_cmd):
     """Exports data from D1 and imports it into D2."""
-    export_cmd = (
-        f"psql -h {T_HOST} -p {T_PORT} -U {T_USER} -d {T_NAME} "
-        f"-c \"COPY {table_name} TO STDOUT WITH CSV HEADER\" > {table_name}.csv"
-    )
-    import_cmd = (
-        f"psql -h {R_HOST} -p {R_PORT} -U {R_USER} -d {R_NAME} "
-        f"-c \"COPY \\\"{table_name[0].capitalize() + table_name[1:]}\\\" FROM STDIN WITH CSV HEADER\" < {table_name}.csv"
-    )
-
     try:
-        print(f"Exporting table {table_name} from Voting DB...")
+        print(f"Exporting table from Voting DB...")
         subprocess.run(export_cmd, shell=True, check=True)
-        print(f"Importing table {table_name} into Results DB...")
+        print(f"Importing table into Results DB...")
         subprocess.run(import_cmd, shell=True, check=True)
         print("Data transfer completed.")
     except subprocess.CalledProcessError as e:

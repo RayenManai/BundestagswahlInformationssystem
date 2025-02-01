@@ -1,9 +1,11 @@
+import subprocess
 from os import path
 
 from sqlalchemy import func, case, create_engine, literal_column, cast, Float, Numeric, Engine, text
 from sqlalchemy.orm import sessionmaker, Query, Session
 
-from backend.databases.results.config import DATABASE_URL
+from backend.databases.results.config import DATABASE_URL, DATABASE_USERNAME as R_USER, \
+    DATABASE_PWD as R_PWD, DATABASE_HOST as R_HOST, DATABASE_PORT as R_PORT, DATABASE_NAME as R_NAME
 from backend.databases.results.models import WahlkreisInfo, ZweitstimmeErgebnisse, Base, Erststimme, Zweitstimme
 
 repo_directory = path.join(path.dirname(path.abspath(__file__)), '..', '..')
@@ -13,31 +15,16 @@ def run_text_query(engine: Engine, query: str, params: dict=None, output: dict[i
         params = {}
     with engine.connect() as c:
          result = (c.execute(text(query), parameters=params))
-    if output is None:
-        return []
+         if output is None:
+             c.commit()
+             return []
     result = result.fetchall()
     return [{k: t(r[v]) for (v, (k, t)) in output.items()} for r in result]
 
 def run_sql_script(engine: Engine, script_path: str=path.join(repo_directory, 'scripts/ergebnisse_berechnung.sql')) -> bool:
-    fd = open(script_path, 'r')
-    sql_file = fd.read()
-    fd.close()
-
-    # all SQL commands (split on ';')
-    sql_commands = sql_file.split(';')
-
-    # Execute every command from the input file
-    for command in sql_commands:
-        # This will skip and report errors
-        # For example, if the tables do not yet exist, this will skip over
-        # the DROP TABLE commands
-        try:
-            with engine.connect() as c:
-                c.execute(text(command))
-        except Exception as e:
-            print("Command skipped: ", e)
-            return False
-
+    command = (f"psql -h {R_HOST} -p {R_PORT} -U {R_USER} -d {R_NAME} "
+               f"-f {script_path} ")
+    subprocess.run(command, shell=True, check=True)
     return True
 
 def run_sql_query(session: Session, query: Query, output: dict[int, tuple[str, type]]=None) -> list[dict]:
@@ -399,8 +386,8 @@ WHERE jahr = :year AND "wahlkreisId" = :wahlkreis;
 '''
 
 aggregate_all_votes = '''
-UPDATE  "DirektKandidatur"
-SET anzahlstimmen = (SELECT COUNT(*) FROM "Erststimme" e where "kanditaturId" = e."kanditaturId");
+UPDATE  "DirektKandidatur" d
+SET anzahlstimmen = (SELECT COUNT(*) FROM "Erststimme" e where d."kandidaturId" = e."kanditaturId");
 UPDATE  "ZweitstimmeErgebnisse" z
 SET anzahlstimmen = (SELECT COUNT(*) FROM "Zweitstimme" e where z.id = e."ZSErgebnisId");
 '''

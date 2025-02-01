@@ -1,9 +1,34 @@
 /*
   Entfernen aller Materialized views
  */
-SELECT 'DROP MATERIALIZED VIEW ' || string_agg(oid::regclass::text, ', ')
-FROM   pg_class
-WHERE  relkind = 'm';
+DROP MATERIALIZED VIEW IF EXISTS Parteien_Landeslistenverteilung_final_2017;
+DROP MATERIALIZED VIEW IF EXISTS Parteien_Landeslistenverteilung_final_2021;
+DROP MATERIALIZED VIEW IF EXISTS parteien_sitzverteilung_final_2017;
+DROP MATERIALIZED VIEW IF EXISTS parteien_sitzverteilung_final_2021;
+DROP MATERIALIZED VIEW IF EXISTS Anfangsdivisor_Erhoehung_GesamtzahlSitze_2017;
+DROP MATERIALIZED VIEW IF EXISTS Anfangsdivisor_Erhoehung_GesamtzahlSitze_2021;
+DROP MATERIALIZED VIEW IF EXISTS Mindestsitze_2017;
+DROP MATERIALIZED VIEW IF EXISTS Mindestsitze_2021;
+DROP MATERIALIZED VIEW IF EXISTS ZwischenErgebnis_Mindestsitze_2017;
+DROP MATERIALIZED VIEW IF EXISTS ZwischenErgebnis_Mindestsitze_2021;
+DROP MATERIALIZED VIEW IF EXISTS Parteien_Sitzverteilung_2017;
+DROP MATERIALIZED VIEW IF EXISTS Parteien_Sitzverteilung_2021;
+DROP MATERIALIZED VIEW IF EXISTS Mindestsitze_2017;
+DROP MATERIALIZED VIEW IF EXISTS Mindestsitze_2021;
+DROP MATERIALIZED VIEW IF EXISTS Partei_gewonnene_Walhkreise_2017;
+DROP MATERIALIZED VIEW IF EXISTS Partei_gewonnene_Walhkreise_2021;
+DROP MATERIALIZED VIEW IF EXISTS Parteien_Sitzverteilung_2017;
+DROP MATERIALIZED VIEW IF EXISTS Parteien_Sitzverteilung_2021;
+DROP MATERIALIZED VIEW IF EXISTS Partei_Bundesland_Zweitstimmen_neu_2017;
+DROP MATERIALIZED VIEW IF EXISTS Partei_Bundesland_Zweitstimmen_neu_2021;
+DROP MATERIALIZED VIEW IF EXISTS Partei_Gesamt_Zweitstimmen_neu_2017;
+DROP MATERIALIZED VIEW IF EXISTS Partei_Gesamt_Zweitstimmen_neu_2021;
+DROP MATERIALIZED VIEW IF EXISTS Parteien_Nach_Huerde_2017;
+DROP MATERIALIZED VIEW IF EXISTS Parteien_Nach_Huerde_2021;
+DROP MATERIALIZED VIEW IF EXISTS Partei_Gesamt_Zweitstimmen_2017;
+DROP MATERIALIZED VIEW IF EXISTS Partei_Gesamt_Zweitstimmen_2021;
+DROP MATERIALIZED VIEW IF EXISTS Oberverteilung_2017;
+DROP MATERIALIZED VIEW IF EXISTS Oberverteilung_2021;
 
 /*
   Zurücksetzen aller berechneten Ergebnisse
