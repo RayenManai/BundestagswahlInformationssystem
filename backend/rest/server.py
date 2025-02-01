@@ -69,7 +69,7 @@ def get_results(): #contains at most: year, bundesland, wahlkreis
 
     assert "wahlkreis" in values.keys(), "wahlkreis must be specified"
     wahlkreis = values['wahlkreis']
-    if values.get("aggregated", False):
+    if not values.get("aggregated", True):
         run_text_query(engine, aggregate_votes_wahlkreis, {'year': year, 'wahlkreis': wahlkreis})
         if year == 2021:
             run_text_query(engine, aggregate_votes_wahlkreis, {'year': 2017, 'wahlkreis': wahlkreis})

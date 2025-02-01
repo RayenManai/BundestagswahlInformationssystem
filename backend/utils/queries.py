@@ -377,8 +377,8 @@ having sprung = (select MIN(sprung) from keineGewinnerParteienSprunge k2 where k
 )
 
 aggregate_votes_wahlkreis = '''
-UPDATE  "DirektKandidatur"
-SET anzahlstimmen = (SELECT COUNT(*) FROM "Erststimme" e where "kanditaturId" = e."kanditaturId")
+UPDATE  "DirektKandidatur" d
+SET anzahlstimmen = (SELECT COUNT(*) FROM "Erststimme" e where d."kandidaturId" = e."kanditaturId")
 WHERE jahr = :year AND "wahlkreisId" = :wahlkreis;
 UPDATE  "ZweitstimmeErgebnisse" z
 SET anzahlstimmen = (SELECT COUNT(*) FROM "Zweitstimme" e where z.id = e."ZSErgebnisId")
