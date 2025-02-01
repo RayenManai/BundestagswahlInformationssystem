@@ -11,6 +11,7 @@ import {
 import { MRT_Localization_DE } from "material-react-table/locales/de";
 import CustomSnackbar from "../utils/CustomSnackbar";
 import Loader from "../loader";
+import { BUNDESLAENDER } from "../../models/bundeslaender";
 
 const PageContainer = styled.div`
   display: flex;
@@ -103,7 +104,14 @@ const AbgeordneteListe: React.FC = () => {
         filterVariant: "select",
         filterSelectOptions: Array.from(
           new Set(members.map((m) => m.bundesland))
-        ),
+        ).map((abbreviation) => ({
+          value: abbreviation,
+          label:
+            BUNDESLAENDER.find((b) => b.abbreviation === abbreviation)?.name ||
+            abbreviation,
+        })),
+        Cell: ({ cell }) =>
+          BUNDESLAENDER.find((b) => b.abbreviation === cell.getValue())!.name,
       },
       {
         accessorKey: "direktMandat",

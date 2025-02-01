@@ -13,6 +13,6 @@ export const BUNDESLAENDER = [
   { name: "Saarland", abbreviation: "SL" },
   { name: "Sachsen", abbreviation: "SN" },
   { name: "Sachsen-Anhalt", abbreviation: "ST" },
-  { name: "Schleswig-Holstein", abbreviation: "SW" },
+  { name: "Schleswig-Holstein", abbreviation: "SH" },
   { name: "Thüringen", abbreviation: "TH" },
 ];

@@ -4,12 +4,13 @@ import { styled } from "styled-components";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
-import GenerateToken from "./pages/token/GenerateToken";
+import GenerateToken from "./pages/admin-panel/token/GenerateToken";
 import VoteAuth from "./pages/vote/VoteAuth";
 import PrivateRoute from "./PrivateRoute";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
 import keycloak from "./KeycloakService";
 import Stimmzettel from "./pages/vote/Stimmzettel";
+import AdminPanel from "./pages/admin-panel/admin-panel";
 
 const PageContainer = styled.div`
   display: flex;
@@ -58,6 +59,14 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route
+                path="/admin_panel"
+                element={
+                  <PrivateRoute>
+                    <AdminPanel />
+                  </PrivateRoute>
+                }
+              />
+              <Route
                 path="/generate_token"
                 element={
                   <PrivateRoute>
@@ -79,7 +88,7 @@ const App: React.FC = () => {
 const Home: React.FC = () => {
   return (
     <ButtonContainer>
-      <StyledButton to="/generate_token">Token generieren</StyledButton>
+      <StyledButton to="/admin_panel">Admin Panel</StyledButton>
       <StyledButton to="/vote">Stimme abgeben</StyledButton>
     </ButtonContainer>
   );
