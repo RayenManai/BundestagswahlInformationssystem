@@ -1,15 +1,19 @@
-import logging
-import time
-from itertools import groupby
-
-from flask import Flask, jsonify, request, g
+from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from backend.utils.queries import (DATABASE_URL, create_engine, run_text_query, bundesweit, landesweit,
                                    beteiligung_bundesweit, wahlkreisweit, angeordnete_bundesweit,
                                    angeordnete_landesweit, get_wahlkreis_data, get_wahlkreis_data_2,
-                                   beteiligung_landesweit, beteiligung_wahlkreis, knappste_sieger, direkt_mandat)
+                                   beteiligung_landesweit, beteiligung_wahlkreis, knappste_sieger, direkt_mandat,
+                                   aggregate_votes_wahlkreis)
 
+app = Flask(__name__)
+CORS(app)
+
+engine = create_engine(DATABASE_URL, echo=True)
+
+"""
 log = True
 
 # Set up logging
@@ -22,10 +26,6 @@ if log:
 else:
     logger = None
 
-app = Flask(__name__)
-CORS(app)
-
-engine = create_engine(DATABASE_URL, echo=True)
 
 @app.before_request
 def start_timer():
@@ -38,7 +38,7 @@ def log_response_time(response):
         duration = time.time() - g.start_time
         logger.info(f"{request.method} {request.path} {response.status_code} {duration:.3f}s")
     return response
-
+"""
 
 @app.route('/api/results', methods=['GET'])
 def get_results(): #contains at most: year, bundesland, wahlkreis
@@ -69,9 +69,13 @@ def get_results(): #contains at most: year, bundesland, wahlkreis
 
     assert "wahlkreis" in values.keys(), "wahlkreis must be specified"
     wahlkreis = values['wahlkreis']
+    if values.get("aggregated", False):
+        run_text_query(engine, aggregate_votes_wahlkreis, {'year': year, 'wahlkreis': wahlkreis})
+        if year == 2021:
+            run_text_query(engine, aggregate_votes_wahlkreis, {'year': 2017, 'wahlkreis': wahlkreis})
     output_format = {0: ('id', str), 1: ('firstVotes', int), 2: ('secondVotes', int)}
     result1 = run_text_query(engine, wahlkreisweit, {'year': year, 'wahlkreis': wahlkreis}, output_format)
-    result2 = run_text_query(engine, wahlkreisweit, {'year': year, 'wahlkreis': wahlkreis}, output_format) \
+    result2 = run_text_query(engine, wahlkreisweit, {'year': 2017, 'wahlkreis': wahlkreis}, output_format) \
         if year == 2021 else []
     result3 = run_text_query(engine, beteiligung_wahlkreis, {'year': year, 'wahlkreis': wahlkreis},
                              {0: ('wahlberechtigte', int), 1: ('wahlbeteiligte', int)})

@@ -3,6 +3,7 @@ import os
 import secrets
 import requests
 import traceback
+import subprocess
 
 import jose.jwt as jwt
 from flask import Flask, jsonify, request
@@ -11,12 +12,14 @@ from sqlalchemy.orm import sessionmaker
 from flask_cors import CORS
 
 from backend.utils.TokenManager import TokenManager
-from backend.utils.queries import run_sql_query, insert_vote
-from backend.databases.voting.models import Waehler
+from backend.utils.queries import run_sql_query, run_text_query, run_sql_script, aggregate_all_votes
+from backend.databases.voting.models import Waehler, Erststimme, Zweitstimme
 from backend.databases.results.models import DirektKandidatur, Kandidat, Partei, ParteiListe, Wahlkreis, \
     ZweitstimmeErgebnisse
-from backend.databases.voting.config import DATABASE_URL as TOKEN_DB_URL
-from backend.databases.results.config import DATABASE_URL as RESULTS_DB_URL
+from backend.databases.voting.config import DATABASE_URL as TOKEN_DB_URL, DATABASE_USERNAME as T_USER, \
+    DATABASE_PWD as T_PWD, DATABASE_HOST as T_HOST, DATABASE_PORT as T_PORT, DATABASE_NAME as T_NAME
+from backend.databases.results.config import DATABASE_URL as RESULTS_DB_URL, DATABASE_USERNAME as R_USER, \
+    DATABASE_PWD as R_PWD, DATABASE_HOST as R_HOST, DATABASE_PORT as R_PORT, DATABASE_NAME as R_NAME
 
 app = Flask(__name__)
 CORS(app)
@@ -208,5 +211,82 @@ def process_vote():
     insert_vote(first_vote[0], second_vote[0])
     return jsonify({"message": "Voting process terminated"}), 200
 
+
+def update_pgpass(db_config):
+    PGPASS_PATH = os.path.expanduser("~/.pgpass")
+    """Ensures .pgpass contains the required credentials."""
+    line = f"{db_config['host']}:{db_config['port']}:{db_config['dbname']}:{db_config['user']}:{db_config['password']}"
+
+    if not os.path.exists(PGPASS_PATH):
+        with open(PGPASS_PATH, "x") as f:
+            f.write(line + "\n")
+    else:
+        with open(PGPASS_PATH, "r") as f:
+            lines = f.readlines()
+
+        if line + "\n" not in lines:
+            with open(PGPASS_PATH, "a") as f:
+                f.write(line + "\n")
+
+    os.chmod(PGPASS_PATH, 0o600)
+
+@app.route("/end_election", methods=["POST"])
+def refresh():
+    """
+    if not validate_token(rq=request):
+        return {"error": "You are not authorized to end the votes"}, 403
+    """
+    output = subprocess.run(["psql", "--version"], stdout=subprocess.PIPE)
+    if output.stdout is None:
+        print("Please install psql before running this command")
+        return {"error": "An error on the server side occured"}, 500
+    update_pgpass({'host': T_HOST, 'port': T_PORT, 'dbname': T_NAME, 'user': T_USER, 'password': T_PWD})
+    update_pgpass({'host': R_HOST, 'port': R_PORT, 'dbname': R_NAME, 'user': R_USER, 'password': R_PWD})
+    export_cmd = (
+        f"psql -h {T_HOST} -p {T_PORT} -U {T_USER} -d {T_NAME} "
+        f"-c \"COPY (SELECT \\\"kandidaturId\\\" from Erststimme) TO STDOUT WITH CSV HEADER\" > erststimme.csv"
+    )
+    import_cmd = (
+        f"psql -h {R_HOST} -p {R_PORT} -U {R_USER} -d {R_NAME} "
+        f"-c \"COPY \\\"Erststimme\\\"(\\\"kanditaturId\\\") FROM STDIN WITH CSV HEADER\" < erststimme.csv"
+    )
+    copy_table(export_cmd, import_cmd)
+    export_cmd = (
+        f"psql -h {T_HOST} -p {T_PORT} -U {T_USER} -d {T_NAME} "
+        f"-c \"COPY (SELECT \\\"ZSErgebnisId\\\" from Zweitstimme) TO STDOUT WITH CSV HEADER\" > zweitstimme.csv"
+    )
+    import_cmd = (
+        f"psql -h {R_HOST} -p {R_PORT} -U {R_USER} -d {R_NAME} "
+        f"-c \"COPY \\\"Zweitstimme\\\"(\\\"ZSErgebnisId\\\") FROM STDIN WITH CSV HEADER\" < zweitstimme.csv"
+    )
+    copy_table(export_cmd, import_cmd)
+    run_text_query(engine=voting_engine, query='TRUNCATE TABLE erststimme; TRUNCATE TABLE zweitstimme')
+    run_text_query(engine=results_engine, query=aggregate_all_votes)
+    run_sql_script(engine=results_engine)
+    return {"message": "Refreshed"}, 200
+
+def copy_table(export_cmd, import_cmd):
+    """Exports data from D1 and imports it into D2."""
+    try:
+        print(f"Exporting table from Voting DB...")
+        subprocess.run(export_cmd, shell=True, check=True)
+        print(f"Importing table into Results DB...")
+        subprocess.run(import_cmd, shell=True, check=True)
+        print("Data transfer completed.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error during data transfer: {e}")
+
+def insert_vote(first_vote, second_vote):
+    engine = create_engine(TOKEN_DB_URL, echo=True)
+    new_session = sessionmaker(bind=engine)
+    with new_session() as session:
+        try:
+            session.add(Erststimme(kandidaturId=first_vote))
+            session.add(Zweitstimme(ZSErgebnisId=second_vote))
+            session.commit()
+        except Exception as e:
+            print(e)
+            session.rollback()
+
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    app.run(port=5001, debug=True)

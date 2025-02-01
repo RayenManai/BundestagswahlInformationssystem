@@ -10,7 +10,7 @@ from sqlalchemy import create_engine, insert, select
 from sqlalchemy.orm import sessionmaker
 
 from backend.databases.voting.config import DATABASE_URL as TOKEN_DB_URL
-from backend.databases.voting.models import ValideToken, VerbrauchteToken, Waehler
+from backend.databases.voting.models import ValideToken, VerbrauchteToken
 
 class TokenManager:
 
