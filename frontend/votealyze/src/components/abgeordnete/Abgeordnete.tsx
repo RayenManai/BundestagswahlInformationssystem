@@ -9,9 +9,11 @@ import {
 } from "material-react-table";
 
 import { MRT_Localization_DE } from "material-react-table/locales/de";
+import { MRT_Localization_EN } from "material-react-table/locales/en";
 import CustomSnackbar from "../utils/CustomSnackbar";
 import Loader from "../loader";
 import { BUNDESLAENDER } from "../../models/bundeslaender";
+import { useTranslation } from "react-i18next";
 
 const PageContainer = styled.div`
   display: flex;
@@ -66,6 +68,7 @@ const AbgeordneteListe: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const API_URL = process.env.REACT_APP_API_URL;
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     setLoading(true);
@@ -90,17 +93,17 @@ const AbgeordneteListe: React.FC = () => {
     () => [
       {
         accessorKey: "name",
-        header: "Name",
+        header: t("Name"),
       },
       {
         accessorKey: "party",
-        header: "Partei",
+        header: t("Partei"),
         filterVariant: "select",
         filterSelectOptions: Array.from(new Set(members.map((m) => m.party))),
       },
       {
         accessorKey: "bundesland",
-        header: "Bundesland",
+        header: t("Bundesland"),
         filterVariant: "select",
         filterSelectOptions: Array.from(
           new Set(members.map((m) => m.bundesland))
@@ -115,19 +118,30 @@ const AbgeordneteListe: React.FC = () => {
       },
       {
         accessorKey: "direktMandat",
-        header: "Direktmandat",
+        header: t("Direktmandat"),
         filterVariant: "checkbox",
         Cell: ({ cell }) => (cell.getValue() === true ? "✔️" : "❌"),
       },
       {
         accessorKey: "UberhangMandat",
-        header: "Überhangmandat",
+        header: t("Überhangmandat"),
         filterVariant: "checkbox",
         Cell: ({ cell }) => (cell.getValue() === true ? "✔️" : "❌"),
       },
     ],
-    [members]
+    [members, t]
   );
+
+  const getLocalization = () => {
+    switch (i18n.language) {
+      case "de":
+        return MRT_Localization_DE;
+      case "en":
+        return MRT_Localization_EN;
+      default:
+        return MRT_Localization_EN; // Fallback to English
+    }
+  };
 
   const table = useMaterialReactTable({
     columns,
@@ -145,15 +159,17 @@ const AbgeordneteListe: React.FC = () => {
 
     enableSorting: false,
 
-    localization: MRT_Localization_DE,
+    localization: useMemo(() => getLocalization(), [i18n.language]),
   });
 
   return (
     <PageContainer>
       <FilterPanelContainer>
-        <Title>Bundestag {year}</Title>
+        <Title>
+          {t("Bundestag")} {year}
+        </Title>
         <Label>
-          Jahr:
+          {t("Jahr")}:
           <Select
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
@@ -167,7 +183,7 @@ const AbgeordneteListe: React.FC = () => {
         <CustomSnackbar
           backgroundColor={"#ff656c"}
           color={"white"}
-          message="Fehler beim Laden, bitte später erneut versuchen"
+          message={t("Fehler beim Laden, bitte später erneut versuchen")}
         />
       )}
 

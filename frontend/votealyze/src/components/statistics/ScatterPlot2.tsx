@@ -14,6 +14,7 @@ import {
 } from "chart.js";
 import { WAHLKREISE } from "../../models/wahlkreise";
 import { Statistik3 } from "../../models/results";
+import { useTranslation } from "react-i18next";
 
 ChartJS.register(
   CategoryScale,
@@ -32,6 +33,7 @@ interface ScatterPlotProps {
 
 const ScatterPlot2: React.FC<ScatterPlotProps> = ({ data }) => {
   const [scatterData, setScatterData] = useState<any>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (data) {
@@ -71,7 +73,7 @@ const ScatterPlot2: React.FC<ScatterPlotProps> = ({ data }) => {
       setScatterData({
         datasets: [
           {
-            label: "Wahlkreise",
+            label: t("Wahlkreise"),
             data: xData.map((xValue, index) => ({
               x: xValue,
               y: yData[index],
@@ -100,7 +102,7 @@ const ScatterPlot2: React.FC<ScatterPlotProps> = ({ data }) => {
     plugins: {
       title: {
         display: true,
-        text: "GRÜNEN-Zweitstimmen und Elektromobilität im Wahlkreis",
+        text: t("GRÜNEN-Zweitstimmen und Elektromobilität im Wahlkreis"),
       },
       tooltip: {
         callbacks: {
@@ -113,7 +115,9 @@ const ScatterPlot2: React.FC<ScatterPlotProps> = ({ data }) => {
                 wahlkreisName = found.name;
               }
             });
-            return `${wahlkreisName}: Elektro-/Hybrid-PKWs: ${tooltipItem.raw.x}%, GRÜNEN-Anteil: ${tooltipItem.raw.y}%`;
+            return `${wahlkreisName}: ${t("Elektro-/Hybrid-PKWs")}: ${
+              tooltipItem.raw.x
+            }%, ${t("GRÜNEN-Anteil")}: ${tooltipItem.raw.y}%`;
           },
         },
       },
@@ -126,14 +130,14 @@ const ScatterPlot2: React.FC<ScatterPlotProps> = ({ data }) => {
         type: "linear",
         title: {
           display: true,
-          text: "Anteil Elektro-/Hybrid-PKWs (%)",
+          text: t("Anteil Elektro-/Hybrid-PKWs (%)"),
         },
       },
       y: {
         type: "linear",
         title: {
           display: true,
-          text: "Anteil der GRÜNEN-Zweitstimmen (%)",
+          text: t("Anteil der GRÜNEN-Zweitstimmen (%)"),
         },
       },
     },

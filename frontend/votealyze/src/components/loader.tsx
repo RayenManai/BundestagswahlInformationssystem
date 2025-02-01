@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import styled, { keyframes } from "styled-components";
 
 const growBar = keyframes`
@@ -52,6 +53,7 @@ const BarFill = styled.div<{ color: string; delay: number }>`
 `;
 
 const Loader: React.FC = () => {
+  const { t } = useTranslation();
   const bars = [
     { color: "#004B76", delay: 0 },
     { color: "#008549", delay: 0.3 },
@@ -62,7 +64,7 @@ const Loader: React.FC = () => {
 
   return (
     <LoadingWrapper>
-      <Title>Ergebnisse werden geladen...</Title>
+      <Title>{t("loader_text")}</Title>
       <BarContainer>
         {bars.map((bar, index) => (
           <Bar key={index}>

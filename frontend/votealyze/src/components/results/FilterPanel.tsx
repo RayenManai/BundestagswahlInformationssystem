@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { BUNDESLAENDER } from "../../models/bundeslaender";
 import { WAHLKREISE } from "../../models/wahlkreise";
 import Switch from "@mui/material/Switch";
+import { useTranslation } from "react-i18next";
 
 const FilterPanelContainer = styled.div`
   width: 25%;
@@ -88,23 +89,25 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     }
     setWahlkreis(null); // Reset Wahlkreis when Bundesland changes
   };
+  const { t } = useTranslation();
+
   return (
     <FilterPanelContainer>
-      <Title>Bundestagswahl {year}</Title>
+      <Title>{t("Bundestagswahl")} 2021</Title>{" "}
       <Label>
-        Jahr:
+        {t("Jahr")}:
         <Select value={year} onChange={(e) => setYear(Number(e.target.value))}>
           <option value={2021}>2021</option>
           <option value={2017}>2017</option>
         </Select>
       </Label>
       <Label>
-        Bundesland:
+        {t("Bundesland")}:{" "}
         <Select
           value={bundesland || ""}
           onChange={(e) => handleBundeslandChange(e.target.value || null)}
         >
-          <option value="">Alle</option>
+          <option value="">{t("Alle")}</option>{" "}
           {BUNDESLAENDER.map((land) => (
             <option key={land.abbreviation} value={land.abbreviation}>
               {land.name}
@@ -114,7 +117,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       </Label>
       {bundesland && (
         <Label>
-          Wahlkreis:
+          {t("Wahlkreis")}:{" "}
           <Select
             value={wahlkreis || ""}
             onChange={(e) => setWahlkreis(e.target.value || null)}
@@ -130,7 +133,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       )}
       {wahlkreis && (
         <ToggleContainer>
-          <Label>Aggregiert:</Label>
+          <Label> {t("Agreggiert")}::</Label>
           <Switch
             value={aggregated}
             onChange={(event) => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import styled from "styled-components";
 import KnappsteSieger from "./KnappsteSieger";
 import ScatterPlot from "./ScatterPlot";
@@ -6,6 +6,7 @@ import ScatterPlot2 from "./ScatterPlot2";
 import { Statistik1, Statistik2, Statistik3 } from "../../models/results";
 import Loader from "../loader";
 import CustomSnackbar from "../utils/CustomSnackbar";
+import { useTranslation } from "react-i18next";
 
 const PageContainer = styled.div`
   display: flex;
@@ -90,6 +91,7 @@ const StatisticsPage: React.FC = () => {
   const [scatterData2, setScatterData2] = useState<Statistik3[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const API_URL = process.env.REACT_APP_API_URL;
+  const { t } = useTranslation();
 
   const fetchStatistikData = async () => {
     try {
@@ -144,7 +146,7 @@ const StatisticsPage: React.FC = () => {
           <CustomSnackbar
             backgroundColor={"#ff656c"}
             color={"white"}
-            message="Keine Daten vorhanden"
+            message={t("Keine Daten vorhanden")}
           />
         );
       } else if (scatterData2) {
@@ -164,9 +166,11 @@ const StatisticsPage: React.FC = () => {
     <PageContainer>
       <Sidebar>
         <FilterPanelContainer>
-          <Title>Bundestagswahl {year}</Title>
+          <Title>
+            {t("Bundestagswahl")} {year}
+          </Title>
           <Label>
-            Jahr:
+            {t("Jahr")}:
             <Select
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
@@ -180,19 +184,19 @@ const StatisticsPage: React.FC = () => {
           selected={selectedStat === "knappste Sieger"}
           onClick={() => setSelectedStat("knappste Sieger")}
         >
-          Knappste Sieger
+          {t("Knappste Sieger")}
         </StatLink>
         <StatLink
           selected={selectedStat === "Age"}
           onClick={() => setSelectedStat("Age")}
         >
-          Politische Richtung vs. Durchschnittsalter der Wahlkreise
+          {t("Politische Richtung vs. Durchschnittsalter der Wahlkreise")}
         </StatLink>
         <StatLink
           selected={selectedStat === "PKW_elektro"}
           onClick={() => setSelectedStat("PKW_elektro")}
         >
-          Verhältnis von GRÜNEN-Zweitstimmen zu Elektro-/Hybrid-PKWs
+          {t("Verhältnis von GRÜNEN-Zweitstimmen zu Elektro-/Hybrid-PKWs")}
         </StatLink>
       </Sidebar>
       <ContentArea>{renderSelectedStat()}</ContentArea>

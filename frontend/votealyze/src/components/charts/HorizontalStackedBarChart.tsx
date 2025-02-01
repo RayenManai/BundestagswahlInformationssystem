@@ -10,6 +10,7 @@ import {
 } from "chart.js";
 import { PARTEI_FARBE } from "../../models/parteien_politische_farben";
 import annotationPlugin from "chartjs-plugin-annotation"; // Import the annotation plugin
+import { useTranslation } from "react-i18next";
 
 ChartJS.register(
   BarElement,
@@ -55,7 +56,9 @@ const HorizontalStackedBarChart: React.FC<HorizontalStackedBarChartProps> = ({
       tooltip: {
         callbacks: {
           label: (tooltipItem: any) => {
-            return `${tooltipItem.dataset.label}: ${tooltipItem.raw} Sitze`;
+            return `${tooltipItem.dataset.label}: ${tooltipItem.raw} ${t(
+              "Sitze"
+            )}`;
           },
         },
       },
@@ -86,6 +89,8 @@ const HorizontalStackedBarChart: React.FC<HorizontalStackedBarChartProps> = ({
       },
     },
   };
+
+  const { t } = useTranslation();
 
   return (
     <div style={{ width: "100%", height: "400px" }}>

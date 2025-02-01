@@ -14,6 +14,7 @@ import VerticalBarChart from "../charts/VerticalBarChart";
 import { Doughnut } from "react-chartjs-2";
 import Loader from "../loader";
 import CustomSnackbar from "../utils/CustomSnackbar";
+import { useTranslation } from "react-i18next";
 
 const ResultsPanelContainer = styled.div`
   flex: 1;
@@ -115,6 +116,7 @@ interface ResultsPanelProps {
 }
 
 const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
+  const { t } = useTranslation();
   //TODO: look for a better way to do this
   if (!data) {
     return <Loader />;
@@ -135,7 +137,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
   ).toFixed(2);
 
   const chartData = {
-    labels: ["Wahlbeteiligte", "Nicht-Teilgenommen"],
+    labels: [t("Wahlbeteiligte"), t("Nicht-Teilgenommen")],
     datasets: [
       {
         data: [data.wahlbeteiligte, data.wahlberechtigte - data.wahlbeteiligte],
@@ -237,7 +239,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
     return (
       <ResultsPanelContainer>
         <ResultContainer>
-          <h2>Sitzverteilung</h2>
+          <h2>{t("Sitzverteilung")}</h2>{" "}
           <HalfDoughnutChart
             data={seats}
             labels={parties}
@@ -247,10 +249,10 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
             <table>
               <thead>
                 <tr>
-                  <th>Partei</th>
-                  <th>Sitze</th>
+                  <th>{t("Partei")}</th>
+                  <th>{t("Sitze")}</th>
                   {oldPartyResults.length > 0 && (
-                    <th>Differenz zu Vorwahl</th>
+                    <th>{t("Differenz zu Vorwahl")}</th>
                   )}{" "}
                   {/* Show only if old results exist */}
                 </tr>
@@ -283,7 +285,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
           </TableContainer>
         </ResultContainer>
         <ResultContainer>
-          <h2>Wahlbeteiligung</h2>
+          <h2>{t("Wahlbeteiligung")}</h2>{" "}
           <div style={{ width: "200px", margin: "0 auto" }}>
             <Doughnut data={chartData} options={chartOptions} />
             <div
@@ -300,17 +302,17 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
           </div>
           <Summary>
             <InfoBox>
-              <Label1>Wahlberechtigte</Label1>
+              <Label1>{t("Wahlberechtigte")}</Label1>
               <Value1>{data.wahlberechtigte.toLocaleString()}</Value1>
             </InfoBox>
             <InfoBox>
-              <Label1>Wahlbeteiligte</Label1>
+              <Label1>{t("Wahlbeteiligte")}</Label1>
               <Value1>{data.wahlbeteiligte.toLocaleString()}</Value1>
             </InfoBox>
           </Summary>
         </ResultContainer>
         <ResultContainer>
-          <h2>Erststimmen</h2>
+          <h2>{t("Erststimmen")}</h2>{" "}
           <VerticalBarChart
             data={erststimmenData}
             years={erststimmenYears}
@@ -318,7 +320,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
           />
         </ResultContainer>
         <ResultContainer>
-          <h2>Zweitstimmen</h2>
+          <h2>{t("Zweitstimmen")}</h2>{" "}
           <VerticalBarChart
             data={zweitstimmenData}
             years={zweitstimmenYears}
@@ -326,7 +328,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
           />
         </ResultContainer>
         <ResultContainer>
-          <h2>Mögliche Koalitionen</h2>
+          <h2>{t("Mögliche Koalitionen")}</h2>{" "}
           <HorizontalStackedBarChart
             data={coalitionData}
             parties={parties}
@@ -354,7 +356,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
     return (
       <ResultsPanelContainer>
         <ResultContainer>
-          <h2>Wahlbeteiligung</h2>
+          <h2>{t("Wahlbeteiligung")}</h2>
           <div style={{ width: "200px", margin: "0 auto" }}>
             <Doughnut data={chartData} options={chartOptions} />
             <div
@@ -371,11 +373,11 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
           </div>
           <Summary>
             <InfoBox>
-              <Label1>Wahlberechtigte</Label1>
+              <Label1>{t("Wahlberechtigte")}</Label1>
               <Value1>{data.wahlberechtigte.toLocaleString()}</Value1>
             </InfoBox>
             <InfoBox>
-              <Label1>Wahlbeteiligte</Label1>
+              <Label1>{t("Wahlbeteiligte")}</Label1>
               <Value1>{data.wahlbeteiligte.toLocaleString()}</Value1>
             </InfoBox>
           </Summary>
@@ -416,20 +418,20 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
     return (
       <ResultsPanelContainer>
         <ResultContainer>
-          <h2>Direktmandat</h2>
+          <h2>{t("Direktmandat")}</h2>
           <DirektmandatCard>
             <InfoRow>
-              <Label>Name:</Label>
+              <Label>{t("Name")}:</Label>
               <Value>{direktMandat.name}</Value>
             </InfoRow>
             <InfoRow>
-              <Label>Partei:</Label>
+              <Label>{t("Partei")}:</Label>
               <Value>{direktMandat.party}</Value>
             </InfoRow>
           </DirektmandatCard>
         </ResultContainer>
         <ResultContainer>
-          <h2>Wahlbeteiligung</h2>
+          <h2>{t("Wahlbeteiligung")}</h2>
           <div style={{ width: "200px", margin: "0 auto" }}>
             <Doughnut data={chartData} options={chartOptions} />
             <div
@@ -446,11 +448,11 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
           </div>
           <Summary>
             <InfoBox>
-              <Label1>Wahlberechtigte</Label1>
+              <Label1>{t("Wahlberechtigte")}</Label1>
               <Value1>{data.wahlberechtigte.toLocaleString()}</Value1>
             </InfoBox>
             <InfoBox>
-              <Label1>Wahlbeteiligte</Label1>
+              <Label1>{t("Wahlbeteiligte")}</Label1>
               <Value1>{data.wahlbeteiligte.toLocaleString()}</Value1>
             </InfoBox>
           </Summary>

@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Statistik1 } from "../../models/results";
+import { useTranslation } from "react-i18next";
 
 const Container = styled.div`
   display: flex;
@@ -62,6 +63,8 @@ interface KnappsteSiegerProps {
 }
 
 const KnappsteSieger: React.FC<KnappsteSiegerProps> = ({ data }) => {
+  const { t } = useTranslation();
+
   if (
     !data ||
     (!data.knappsteSieger.length && !data.knappsteVerlorene.length)
@@ -72,70 +75,66 @@ const KnappsteSieger: React.FC<KnappsteSiegerProps> = ({ data }) => {
   return (
     <Container>
       <Section>
-        <Title>Knappste Sieger</Title>
-        <Paragraph>
-          Top 10 der knappsten Sieger: Die knappsten Sieger sind die gewählten
-          Erstkandidaten, welche mit dem geringsten Vorsprung gegen- uber ihren
-          Konkurrenten gewonnen haben.
-        </Paragraph>
+        <Title>{t("Knappste Sieger")}</Title>
+        <Paragraph>{t("knap_sieger")}</Paragraph>
         {data.knappsteSieger.map((item, index) => (
           <Card key={index}>
             <Detail>
-              <strong>Name:</strong> <span>{item.name}</span>
+              <strong>{t("Name")}:</strong> <span>{item.name}</span>
             </Detail>
             <Detail>
-              <strong>Partei:</strong> <span>{item.partei}</span>
+              <strong>{t("Partei")}:</strong> <span>{item.partei}</span>
             </Detail>
             <Detail>
-              <strong>Wahlkreis:</strong> <span>{item.wahlkreis}</span>
+              <strong>{t("Wahlkreis")}:</strong> <span>{item.wahlkreis}</span>
             </Detail>
             <Detail>
-              <strong>Gewonnene Stimmen:</strong>{" "}
+              <strong>{t("Gewonnene Stimmen")}:</strong>{" "}
               <span>{item.gewonnene_stimmen}</span>
             </Detail>
             <Detail>
-              <strong>Abstand:</strong> <span>{item.sprung} Stimmen</span>
+              <strong>{t("Abstand")}:</strong>{" "}
+              <span>{item.sprung} Stimmen</span>
             </Detail>
             <Detail>
-              <strong>Vorgaenger Name:</strong> <span>{item.vorg_name}</span>
+              <strong>{t("Vorgänger Name")}:</strong>{" "}
+              <span>{item.vorg_name}</span>
             </Detail>
             <Detail>
-              <strong>Partei:</strong> <span>{item.vorg_partei}</span>
+              <strong>{t("Partei")}:</strong> <span>{item.vorg_partei}</span>
             </Detail>
           </Card>
         ))}
       </Section>
 
       <Section>
-        <Title>Knappste Verlierer</Title>
-        <Paragraph>
-          Sollte eine Partei keinen Wahlkreis gewonnen haben, sollen stattdessen
-          die Wahlkreise ausgegeben werden, in denen sie am knappsten verloren
-          hat.
-        </Paragraph>
+        <Title>{t("Knappste Verlierer")}</Title>
+        <Paragraph>{t("knap_verlierer")}</Paragraph>
         {data.knappsteVerlorene.map((item, index) => (
           <Card key={index}>
             <Detail>
-              <strong>Name:</strong> <span>{item.name}</span>
+              <strong>{t("Name")}:</strong> <span>{item.name}</span>
             </Detail>
             <Detail>
-              <strong>Partei:</strong> <span>{item.partei}</span>
+              <strong>{t("Partei")}:</strong> <span>{item.partei}</span>
             </Detail>
             <Detail>
-              <strong>Wahlkreis:</strong> <span>{item.wahlkreis}</span>
+              <strong>{t("Wahlkreis")}:</strong> <span>{item.wahlkreis}</span>
             </Detail>
             <Detail>
-              <strong>Gewonnene Stimmen:</strong>{" "}
+              <strong>{t("Gewonnene Stimmen")}:</strong>{" "}
               <span>{item.gewonnene_stimmen}</span>
             </Detail>
             <Detail>
-              <strong>Abstand:</strong> <span>{item.sprung} Stimmen</span>
+              <strong>{t("Abstand")}:</strong>{" "}
+              <span>{item.sprung} Stimmen</span>
             </Detail>
             <Detail>
-              <strong>Vorgaenger Name:</strong> <span>{item.vorg_name}</span>
+              <strong>{t("Vorgänger Name")}:</strong>{" "}
+              <span>{item.vorg_name}</span>
             </Detail>
             <Detail>
-              <strong>Partei:</strong> <span>{item.vorg_partei}</span>
+              <strong>{t("Partei")}:</strong> <span>{item.vorg_partei}</span>
             </Detail>
           </Card>
         ))}
