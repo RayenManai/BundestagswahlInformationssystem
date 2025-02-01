@@ -11,9 +11,10 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import { BUNDESLAENDER } from "../../models/bundeslaender";
-import { WAHLKREISE } from "../../models/wahlkreise";
+import { BUNDESLAENDER } from "../../../models/bundeslaender";
+import { WAHLKREISE } from "../../../models/wahlkreise";
 import { useKeycloak } from "@react-keycloak/web";
+import { useNavigate } from "react-router-dom";
 
 const Container = styled.div`
   display: flex;
@@ -41,6 +42,7 @@ const GenerateToken: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const API_URL = process.env.REACT_APP_API_URL;
+  const navigate = useNavigate();
 
   const filteredWahlkreise = bundesland
     ? WAHLKREISE[bundesland as keyof typeof WAHLKREISE] || []
@@ -192,6 +194,14 @@ const GenerateToken: React.FC = () => {
         {token && <Alert severity="success">Token: {token}</Alert>}
         {error && <Alert severity="error">{error}</Alert>}
       </Form>
+      <Button
+        variant="outlined"
+        color="secondary"
+        onClick={() => navigate("/admin_panel")}
+        style={{ marginTop: "1rem" }}
+      >
+        Zurück zum Admin Panel
+      </Button>
     </Container>
   );
 };

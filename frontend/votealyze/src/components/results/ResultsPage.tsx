@@ -15,6 +15,7 @@ const ResultsPage: React.FC = () => {
   const [year, setYear] = useState<number>(2021);
   const [bundesland, setBundesland] = useState<string | null>(null);
   const [wahlkreis, setWahlkreis] = useState<string | null>(null);
+  const [aggregated, setAggregated] = useState<boolean>(true);
   const [data, setData] = useState<any>(null);
   const [dataType, setDataType] = useState<string>("global");
   const API_URL = process.env.REACT_APP_API_URL;
@@ -23,7 +24,7 @@ const ResultsPage: React.FC = () => {
   const fetchData = async () => {
     let url = `${API_URL}/api/results?year=${year}`;
     if (bundesland) url += `&bundesland=${bundesland}`;
-    if (wahlkreis) url += `&wahlkreis=${wahlkreis}`;
+    if (wahlkreis) url += `&wahlkreis=${wahlkreis}&aggregated=${aggregated}`;
 
     try {
       const response = await fetch(url);
@@ -51,7 +52,7 @@ const ResultsPage: React.FC = () => {
   // Fetch default results on initial render and whenever filters change
   useEffect(() => {
     fetchData();
-  }, [year, bundesland, wahlkreis]);
+  }, [year, bundesland, wahlkreis, aggregated]);
 
   return (
     <PageContainer>
@@ -59,9 +60,11 @@ const ResultsPage: React.FC = () => {
         year={year}
         bundesland={bundesland}
         wahlkreis={wahlkreis}
+        aggregated={aggregated}
         setYear={setYear}
         setBundesland={setBundesland}
         setWahlkreis={setWahlkreis}
+        setAggregated={setAggregated}
       />
       <ResultsPanel data={data} type={dataType} />
     </PageContainer>

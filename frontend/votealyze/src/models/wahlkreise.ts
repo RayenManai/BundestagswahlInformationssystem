@@ -1,5 +1,5 @@
 export const WAHLKREISE = {
-  SW: [
+  SH: [
     { id: 1, name: "Flensburg – Schleswig" },
     { id: 2, name: "Nordfriesland – Dithmarschen Nord" },
     { id: 3, name: "Steinburg – Dithmarschen Süd" },

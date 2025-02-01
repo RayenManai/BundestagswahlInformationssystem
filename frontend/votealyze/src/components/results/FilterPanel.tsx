@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { BUNDESLAENDER } from "../../models/bundeslaender";
 import { WAHLKREISE } from "../../models/wahlkreise";
+import Switch from "@mui/material/Switch";
 
 const FilterPanelContainer = styled.div`
   width: 25%;
@@ -43,22 +44,33 @@ const Select = styled.select`
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 `;
 
+const ToggleContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+`;
+
 interface FilterPanelProps {
   year: number;
   bundesland: string | null;
   wahlkreis: string | null;
+  aggregated: boolean;
   setYear: React.Dispatch<React.SetStateAction<number>>;
   setBundesland: React.Dispatch<React.SetStateAction<string | null>>;
   setWahlkreis: React.Dispatch<React.SetStateAction<string | null>>;
+  setAggregated: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({
   year,
   bundesland,
   wahlkreis,
+  aggregated,
   setYear,
   setBundesland,
   setWahlkreis,
+  setAggregated,
 }) => {
   const [filteredWahlkreise, setFilteredWahlkreise] = useState<
     { id: number; name: string }[]
@@ -115,6 +127,18 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             ))}
           </Select>
         </Label>
+      )}
+      {wahlkreis && (
+        <ToggleContainer>
+          <Label>Aggregiert:</Label>
+          <Switch
+            value={aggregated}
+            onChange={(event) => {
+              setAggregated(event.target.checked);
+            }}
+            defaultChecked
+          />
+        </ToggleContainer>
       )}
     </FilterPanelContainer>
   );
