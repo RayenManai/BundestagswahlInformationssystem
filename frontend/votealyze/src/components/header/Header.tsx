@@ -3,6 +3,8 @@ import styled from "styled-components";
 import { ReactComponent as GermanFlag } from "../../assets/de.svg";
 import { ReactComponent as BritishFlag } from "../../assets/gb.svg";
 import Logo from "./Logo";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 
 const HeaderContainer = styled.header`
   background-color: rgba(30, 113, 255, 0.1);
@@ -59,6 +61,8 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ activePage, setActivePage }) => {
+  const { t } = useTranslation();
+
   return (
     <HeaderContainer>
       <Logo />
@@ -67,28 +71,28 @@ const Header: React.FC<HeaderProps> = ({ activePage, setActivePage }) => {
           active={activePage === "Ergebnisse"}
           onClick={() => setActivePage("Ergebnisse")}
         >
-          Ergebnisse
+          {t("Ergebnisse")}
         </NavButton>
 
         <NavButton
           active={activePage === "Abgeordnete"}
           onClick={() => setActivePage("Abgeordnete")}
         >
-          Abgeordnete
+          {t("Abgeordnete")}
         </NavButton>
 
         <NavButton
           active={activePage === "Statistiken"}
           onClick={() => setActivePage("Statistiken")}
         >
-          Statistiken
+          {t("Statistiken")}{" "}
         </NavButton>
       </Navigation>
       <LanguageSwitch>
-        <FlagButton>
+        <FlagButton onClick={() => i18n.changeLanguage("de")}>
           <GermanFlag />
         </FlagButton>
-        <FlagButton>
+        <FlagButton onClick={() => i18n.changeLanguage("en")}>
           <BritishFlag />
         </FlagButton>
       </LanguageSwitch>

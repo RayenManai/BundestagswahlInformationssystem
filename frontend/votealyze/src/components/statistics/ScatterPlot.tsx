@@ -14,6 +14,7 @@ import {
 } from "chart.js";
 import { WAHLKREISE } from "../../models/wahlkreise";
 import { Statistik2 } from "../../models/results";
+import { useTranslation } from "react-i18next";
 
 ChartJS.register(
   CategoryScale,
@@ -32,6 +33,7 @@ interface ScatterPlotProps {
 
 const ScatterPlot: React.FC<ScatterPlotProps> = ({ data }) => {
   const [scatterData, setScatterData] = useState<any>(null);
+  const { t } = useTranslation();
 
   //maybe useful for x-axis?
   const directionMap: { [key: string]: number } = {
@@ -80,7 +82,7 @@ const ScatterPlot: React.FC<ScatterPlotProps> = ({ data }) => {
       setScatterData({
         datasets: [
           {
-            label: "Wahlkreise",
+            label: t("Wahlkreise"),
             data: xData.map((xValue, index) => ({
               x: xValue,
               y: yData[index],
@@ -109,7 +111,7 @@ const ScatterPlot: React.FC<ScatterPlotProps> = ({ data }) => {
     plugins: {
       title: {
         display: true,
-        text: "Alter vs. Politische Richtung",
+        text: t("Alter vs. Politische Richtung"),
       },
       tooltip: {
         callbacks: {
@@ -135,14 +137,14 @@ const ScatterPlot: React.FC<ScatterPlotProps> = ({ data }) => {
         type: "linear",
         title: {
           display: true,
-          text: "Politische Richtung",
+          text: t("Politische Richtung"),
         },
       },
       y: {
         type: "linear",
         title: {
           display: true,
-          text: "Durchschnittsalter",
+          text: t("Durchschnittsalter"),
         },
       },
     },

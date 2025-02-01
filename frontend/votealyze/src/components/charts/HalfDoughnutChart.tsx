@@ -2,6 +2,7 @@ import React from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { styled } from "styled-components";
+import { useTranslation } from "react-i18next";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -50,7 +51,7 @@ const HalfDoughnutChart: React.FC<HalfDoughnutChartProps> = ({
         callbacks: {
           label: (tooltipItem: any) => {
             const seats = tooltipItem.raw;
-            return `${tooltipItem.label}: ${seats} Sitze`;
+            return `${tooltipItem.label}: ${seats} ${t("Sitze")}`;
           },
         },
       },
@@ -59,6 +60,7 @@ const HalfDoughnutChart: React.FC<HalfDoughnutChartProps> = ({
       },
     },
   };
+  const { t } = useTranslation();
 
   return (
     <ChartContainer>
