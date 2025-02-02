@@ -106,4 +106,12 @@ For benchmarking, we use [locust](https://locust.io/).
 
 #### Votealyze
 
+[votealyze.webm](https://github.com/user-attachments/assets/34c99c0d-9d23-4b93-945b-2b1ac1769a3d)
+
 #### e-Stimme
+
+
+
+https://github.com/user-attachments/assets/7ff5e4be-0fb7-452e-9863-4ede7bfd30bd
+
+
