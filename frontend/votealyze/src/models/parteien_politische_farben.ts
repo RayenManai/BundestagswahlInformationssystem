@@ -4,7 +4,7 @@ export const PARTEI_FARBE = [
   { id: "CSU", color: "#0076b6" },
   { id: "GRÜNE", color: "#008549" },
   { id: "FDP", color: "#f7bc3d" },
-  { id: "AFD", color: "#80cdec" },
+  { id: "AfD", color: "#80cdec" },
   { id: "DIE LINKE", color: "#5f316e" },
   { id: "SSW", color: "#f1a663" },
 ];
