@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { Statistik1 } from "../../models/results";
 import { useTranslation } from "react-i18next";
+import { WAHLKREISE } from "../../models/wahlkreise";
 
 const Container = styled.div`
   display: flex;
@@ -65,6 +66,16 @@ interface KnappsteSiegerProps {
 const KnappsteSieger: React.FC<KnappsteSiegerProps> = ({ data }) => {
   const { t } = useTranslation();
 
+  const getWahlkreisName = (id: number): string => {
+    for (const bundesland in WAHLKREISE) {
+      const found = WAHLKREISE[bundesland as keyof typeof WAHLKREISE].find(
+        (wahlkreis: { id: number }) => wahlkreis.id === id
+      );
+      if (found) return found.name;
+    }
+    return `Wahlkreis ${id}`;
+  };
+
   if (
     !data ||
     (!data.knappsteSieger.length && !data.knappsteVerlorene.length)
@@ -86,7 +97,8 @@ const KnappsteSieger: React.FC<KnappsteSiegerProps> = ({ data }) => {
               <strong>{t("Partei")}:</strong> <span>{item.partei}</span>
             </Detail>
             <Detail>
-              <strong>{t("Wahlkreis")}:</strong> <span>{item.wahlkreis}</span>
+              <strong>{t("Wahlkreis")}:</strong>{" "}
+              <span>{getWahlkreisName(Number(item.wahlkreis))}</span>
             </Detail>
             <Detail>
               <strong>{t("Gewonnene Stimmen")}:</strong>{" "}
@@ -94,7 +106,9 @@ const KnappsteSieger: React.FC<KnappsteSiegerProps> = ({ data }) => {
             </Detail>
             <Detail>
               <strong>{t("Abstand")}:</strong>{" "}
-              <span>{item.sprung} Stimmen</span>
+              <span>
+                {item.sprung} {t("Stimmen")}
+              </span>
             </Detail>
             <Detail>
               <strong>{t("Vorgänger Name")}:</strong>{" "}
@@ -119,7 +133,8 @@ const KnappsteSieger: React.FC<KnappsteSiegerProps> = ({ data }) => {
               <strong>{t("Partei")}:</strong> <span>{item.partei}</span>
             </Detail>
             <Detail>
-              <strong>{t("Wahlkreis")}:</strong> <span>{item.wahlkreis}</span>
+              <strong>{t("Wahlkreis")}:</strong>{" "}
+              <span>{getWahlkreisName(Number(item.wahlkreis))}</span>
             </Detail>
             <Detail>
               <strong>{t("Gewonnene Stimmen")}:</strong>{" "}
@@ -127,7 +142,9 @@ const KnappsteSieger: React.FC<KnappsteSiegerProps> = ({ data }) => {
             </Detail>
             <Detail>
               <strong>{t("Abstand")}:</strong>{" "}
-              <span>{item.sprung} Stimmen</span>
+              <span>
+                {item.sprung} {t("Stimmen")}
+              </span>
             </Detail>
             <Detail>
               <strong>{t("Vorgänger Name")}:</strong>{" "}

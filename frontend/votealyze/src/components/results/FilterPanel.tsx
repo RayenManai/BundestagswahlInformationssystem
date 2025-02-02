@@ -122,7 +122,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             value={wahlkreis || ""}
             onChange={(e) => setWahlkreis(e.target.value || null)}
           >
-            <option value="">Alle</option>
+            <option value="">{t("Alle")}</option>
             {filteredWahlkreise.map((kreis) => (
               <option key={kreis.id} value={kreis.id}>
                 {kreis.name}
@@ -133,7 +133,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       )}
       {wahlkreis && (
         <ToggleContainer>
-          <Label> {t("Agreggiert")}::</Label>
+          <Label> {t("Agreggiert")}:</Label>
           <Switch
             value={aggregated}
             onChange={(event) => {

@@ -35,6 +35,7 @@ i18n.use(initReactI18next).init({
           "Politische Richtung vs. Durchschnittsalter der Wahlkreise",
         "Verhältnis von GRÜNEN-Zweitstimmen zu Elektro-/Hybrid-PKWs":
           "Verhältnis von GRÜNEN-Zweitstimmen zu Elektro-/Hybrid-PKWs",
+        "Knappste Verlierer": "Knappste Verlierer",
         knap_verlierer:
           "Sollte eine Partei keinen Wahlkreis gewonnen haben, sollen stattdessen die Wahlkreise ausgegeben werden, in denen sie am knappsten verloren hat.",
         knap_sieger:
@@ -56,6 +57,7 @@ i18n.use(initReactI18next).init({
         "Anteil der GRÜNEN-Zweitstimmen (%)":
           "Anteil der GRÜNEN-Zweitstimmen (%)",
         "Keine Daten vorhanden": "Keine Daten vorhanden",
+        Stimmen: "Stimmen",
       },
     },
     en: {
@@ -90,6 +92,8 @@ i18n.use(initReactI18next).init({
           "Political direction vs. average age of constituencies",
         "Verhältnis von GRÜNEN-Zweitstimmen zu Elektro-/Hybrid-PKWs":
           "Ratio of GREEN second votes to electric/hybrid cars",
+        "Knappste Verlierer": "Closest Losers",
+
         knap_verlierer:
           "If a party has not won a constituency, the constituencies in which it lost the most narrowly should be announced instead.",
         knap_sieger:
@@ -112,6 +116,7 @@ i18n.use(initReactI18next).init({
         "Anteil der GRÜNEN-Zweitstimmen (%)":
           "share of GRÜNEN second votes (%)",
         "Keine Daten vorhanden": "No data available",
+        Stimmen: "Votes",
       },
     },
   },

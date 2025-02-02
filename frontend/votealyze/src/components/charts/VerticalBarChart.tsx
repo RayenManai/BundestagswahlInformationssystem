@@ -53,7 +53,7 @@ const VerticalBarChart: React.FC<VerticalBarChartProps> = ({
         callbacks: {
           label: (tooltipItem: any) => {
             const party = parties[tooltipItem.dataIndex];
-            const value = tooltipItem.raw;
+            const value = tooltipItem.raw.toLocaleString();
             const percentageChange =
               years[tooltipItem.datasetIndex] === 2021
                 ? data[party]?.[2021]?.percentageChange

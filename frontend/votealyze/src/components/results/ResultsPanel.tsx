@@ -383,7 +383,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
           </Summary>
         </ResultContainer>
         <ResultContainer>
-          <h2>Erststimmen</h2>
+          <h2>{t("Erststimmen")}</h2>
           <VerticalBarChart
             data={erststimmenData}
             years={erststimmenYears}
@@ -391,7 +391,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
           />
         </ResultContainer>
         <ResultContainer>
-          <h2>Zweitstimmen</h2>
+          <h2>{t("Zweitstimmen")}</h2>
           <VerticalBarChart
             data={zweitstimmenData}
             years={zweitstimmenYears}
@@ -458,7 +458,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
           </Summary>
         </ResultContainer>
         <ResultContainer>
-          <h2>Erststimmen</h2>
+          <h2>{t("Erststimmen")}</h2>
           <VerticalBarChart
             data={erststimmenData}
             years={erststimmenYears}
@@ -466,7 +466,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, type }) => {
           />
         </ResultContainer>
         <ResultContainer>
-          <h2>Zweitstimmen</h2>
+          <h2>{t("Zweitstimmen")}</h2>
           <VerticalBarChart
             data={zweitstimmenData}
             years={zweitstimmenYears}
