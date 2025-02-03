@@ -46,13 +46,37 @@ docker-compose up -d
 ### Starting the backend Services:
 
 1. Add keycloak config to the virtual environment:
-   add to `venv/` the following `keycloak_config.json` file:
+   add to `.venv/` the following `keycloak_config.json` file:
 
 ```json
-ewdfwe
+{
+  "jwks_url": "http://localhost:8080/realms/BundestagswahlInformationssystem/protocol/openid-connect/certs",
+  "audience": "account",
+  "issuer": "http://localhost:8080/realms/BundestagswahlInformationssystem"
+}
 ```
 
-2. navigate to `backend/rest/`, then start both servers: `server.py` and `identity_server.py`
+2. Add keycloak client secrets to the virtual environment:
+   add to `.venv/` the following `client_secrets.json` file:
+```json
+{
+  "web": {
+    "issuer": "http://localhost:8080/realms/BundestagswahlInformationssystem",
+    "auth_uri": "http://localhost:8080/realms/BundestagswahlInformationssystem/protocol/openid-connect/auth",
+    "client_id": "account",
+    "client_secret": "JKUsf8FvDJ9LQxUz0vqSzwtxaF17PlXg",
+    "token_uri": "http://localhost:8080/realms/BundestagswahlInformationssystem/protocol/openid-connect/token",
+    "redirect_uris" : ["http://localhost:5000/*"],
+    "userinfo_uri": "http://localhost:8080/realms/BundestagswahlInformationssystem/protocol/openid-connect/userinfo"
+  }
+}
+```
+
+You can edit the configurations depending on the settings you chose for keycloak. 
+However, for a demo, these settings correspond to the keycloak settings stored in
+[portal-real.json](./keycloak/portal-realm.json)
+
+3. navigate to `backend/rest/`, then start both servers: `server.py` and `identity_server.py`
 
 ## Client
 
@@ -101,6 +125,9 @@ For benchmarking, we use [locust](https://locust.io/).
 ```shell
    locust -f benchmark.py --host=http://localhost:5000/ --users <number_of_users> --spawn-rate <number_of_started_clients_per_sec> --run-time <time>
 ```
+
+An example for 10 users, 2 second spawn rate and a runtime of 2 minutes:
+![locust](./resources/locust.png)
 
 ## 💻 Demo
 

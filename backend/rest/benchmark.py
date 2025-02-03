@@ -14,7 +14,7 @@ class BenchmarkTaskSet(TaskSet):
         year = r * 2017 + (1 - r) * 2021
         self.client.get(f"/api/delegates?year={year}", name='Q2')
 
-    @task(15)  # Frequency for Q3
+    @task(25)  # Frequency for Q3
     def q3(self):
         r = random.randint(0, 1)
         year = r * 2017 + (1 - r) * 2021
@@ -40,12 +40,14 @@ class BenchmarkTaskSet(TaskSet):
         year = r * 2017 + (1 - r) * 2021
         self.client.get(f"/api/q6?year={year}", name='Q6')
 
+    """
     @task(10)  # Frequency for Q6
     def q7(self):
         r = random.randint(0, 1)
         year = r * 2017 + (1 - r) * 2021
         wahlkreis = random.randint(1, 299)
         self.client.get(f"/api/results?year={year}&wahlkreis={wahlkreis}&aggregated=false", name='Q7')
+    """
 
 class BenchmarkUser(HttpUser):
     tasks = [BenchmarkTaskSet]
