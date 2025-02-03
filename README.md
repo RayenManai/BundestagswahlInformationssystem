@@ -7,6 +7,7 @@
 - [Glossar](./documentation/Glossar.md)
 - [UML Diagram](./resources/wahlen.png)
 - [Electronic Voting Explainer](./documentation/e-Stimme.md)
+- [Folien](https://docs.google.com/presentation/d/1MNZbIEK26Fst6yqrsjcrRo14GeKyhvlDwGQgXrLv5-k/edit#slide=id.g324cc20295a_0_0)
 
 #### Aktuelles UML-Diagramm unseres Systems:
 
